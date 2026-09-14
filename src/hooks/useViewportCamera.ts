@@ -21,6 +21,8 @@ export function useViewportCamera({
     scale: 0.35,
     isTransitioning: false,
   });
+  const cameraRef = useRef(camera);
+  cameraRef.current = camera;
 
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ x: number; y: number; camX: number; camY: number }>({
@@ -30,25 +32,27 @@ export function useViewportCamera({
     camY: 0,
   });
 
-  const touchDistRef = useRef<number | null>(null);
-
   // Calculate idle overview camera parameters (fits entire masterplan with generous margin)
   const getIdleTransform = useCallback((): CameraState => {
     if (!containerRef.current) {
       return { x: 0, y: 0, scale: 0.35, isTransitioning: false };
     }
     const rect = containerRef.current.getBoundingClientRect();
-    const paddingX = 24;
-    const paddingY = 24;
-    const availW = rect.width - paddingX * 2;
-    const availH = rect.height - paddingY * 2;
+    const isMobile = rect.width < 768;
+
+    const paddingX = isMobile ? 12 : 36;
+    const paddingTop = isMobile ? 70 : 40;
+    const paddingBottom = isMobile ? 70 : 40;
+
+    const availW = Math.max(100, rect.width - paddingX * 2);
+    const availH = Math.max(100, rect.height - paddingTop - paddingBottom);
 
     const scaleX = availW / CANVAS_BOUNDS.width;
     const scaleY = availH / CANVAS_BOUNDS.height;
     const scale = Math.min(scaleX, scaleY);
 
     const x = (rect.width - CANVAS_BOUNDS.width * scale) / 2;
-    const y = (rect.height - CANVAS_BOUNDS.height * scale) / 2;
+    const y = paddingTop + (availH - CANVAS_BOUNDS.height * scale) / 2;
 
     return { x, y, scale, isTransitioning: true };
   }, [containerRef]);
@@ -254,26 +258,25 @@ export function useViewportCamera({
   }, [containerRef]);
 
   const dragDistanceRef = useRef(0);
-  const isPointerDownRef = useRef(false);
+  const isMouseDownRef = useRef(false);
 
-  // Pointer drag handling (mouse and single touch)
-  const handlePointerDown = useCallback((e: React.PointerEvent) => {
-    if (e.button !== 0 && e.pointerType === 'mouse') return;
-    isPointerDownRef.current = true;
+  // Mouse pan handling (desktop only)
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    isMouseDownRef.current = true;
     dragDistanceRef.current = 0;
     dragStartRef.current = {
       x: e.clientX,
       y: e.clientY,
-      camX: camera.x,
-      camY: camera.y,
+      camX: cameraRef.current.x,
+      camY: cameraRef.current.y,
     };
-  }, [camera.x, camera.y]);
+  }, []);
 
-  const handlePointerMove = useCallback((e: React.PointerEvent) => {
-    // CRITICAL: NEVER pan or drag unless the pointer is actively held down!
-    if (!isPointerDownRef.current) return;
-    if (e.pointerType === 'mouse' && e.buttons !== 1) {
-      isPointerDownRef.current = false;
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isMouseDownRef.current) return;
+    if (e.buttons !== 1) {
+      isMouseDownRef.current = false;
       setIsDragging(false);
       return;
     }
@@ -283,13 +286,7 @@ export function useViewportCamera({
     const dist = Math.hypot(dx, dy);
     dragDistanceRef.current = dist;
 
-    // Only pan if user deliberately dragged beyond 8px threshold
-    if (dist > 8) {
-      if (!isDragging) {
-        try {
-          (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-        } catch (_) {}
-      }
+    if (dist > 6) {
       setIsDragging(true);
       setCamera(prev => ({
         ...prev,
@@ -298,62 +295,143 @@ export function useViewportCamera({
         isTransitioning: false,
       }));
     }
-  }, [isDragging]);
+  }, []);
 
-  const handlePointerUp = useCallback((e: React.PointerEvent) => {
-    if (!isPointerDownRef.current) return;
-    isPointerDownRef.current = false;
-    try {
-      if ((e.currentTarget as HTMLElement).hasPointerCapture?.(e.pointerId)) {
-        (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-      }
-    } catch (_) {}
+  const handleMouseUp = useCallback(() => {
+    if (!isMouseDownRef.current) return;
+    isMouseDownRef.current = false;
     setIsDragging(false);
-    // Reset drag distance shortly after click handler has finished evaluating
     setTimeout(() => {
       dragDistanceRef.current = 0;
-    }, 50);
+    }, 60);
   }, []);
 
-  // Multi-touch pinch zoom
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      const t1 = e.touches[0];
-      const t2 = e.touches[1];
-      const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-      touchDistRef.current = dist;
-    }
-  }, []);
+  // Dedicated Native Touch Listeners (Mobile: 1-finger pan & 2-finger pinch zoom)
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 2 && touchDistRef.current !== null && containerRef.current) {
-      const t1 = e.touches[0];
-      const t2 = e.touches[1];
-      const newDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
-      const factor = newDist / touchDistRef.current;
-      touchDistRef.current = newDist;
+    let isPinching = false;
+    let pinchStartDist = 0;
+    let pinchStartScale = 1;
+    let pinchStartMidX = 0;
+    let pinchStartMidY = 0;
+    let pinchStartCamX = 0;
+    let pinchStartCamY = 0;
 
-      const rect = containerRef.current.getBoundingClientRect();
-      const midX = (t1.clientX + t2.clientX) / 2 - rect.left;
-      const midY = (t1.clientY + t2.clientY) / 2 - rect.top;
+    let isPanning = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let panStartCamX = 0;
+    let panStartCamY = 0;
 
-      setCamera(prev => {
-        const newScale = Math.max(0.08, Math.min(5.5, prev.scale * factor));
-        const newX = midX - (midX - prev.x) * (newScale / prev.scale);
-        const newY = midY - (midY - prev.y) * (newScale / prev.scale);
-        return {
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length === 1) {
+        // Single finger pan
+        isPinching = false;
+        isPanning = true;
+        const t = e.touches[0];
+        panStartX = t.clientX;
+        panStartY = t.clientY;
+        panStartCamX = cameraRef.current.x;
+        panStartCamY = cameraRef.current.y;
+        dragDistanceRef.current = 0;
+      } else if (e.touches.length === 2) {
+        // Two-finger pinch zoom
+        isPanning = false;
+        isPinching = true;
+        e.preventDefault();
+
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        pinchStartDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        pinchStartScale = cameraRef.current.scale;
+
+        const rect = el.getBoundingClientRect();
+        pinchStartMidX = (t1.clientX + t2.clientX) / 2 - rect.left;
+        pinchStartMidY = (t1.clientY + t2.clientY) / 2 - rect.top;
+        pinchStartCamX = cameraRef.current.x;
+        pinchStartCamY = cameraRef.current.y;
+      }
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (isPinching && e.touches.length === 2) {
+        e.preventDefault();
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        if (pinchStartDist <= 0) return;
+
+        const factor = dist / pinchStartDist;
+        const newScale = Math.max(0.08, Math.min(6.0, pinchStartScale * factor));
+
+        const rect = el.getBoundingClientRect();
+        const currentMidX = (t1.clientX + t2.clientX) / 2 - rect.left;
+        const currentMidY = (t1.clientY + t2.clientY) / 2 - rect.top;
+
+        const scaleRatio = newScale / pinchStartScale;
+        const newX = currentMidX - (pinchStartMidX - pinchStartCamX) * scaleRatio;
+        const newY = currentMidY - (pinchStartMidY - pinchStartCamY) * scaleRatio;
+
+        setCamera({
           x: newX,
           y: newY,
           scale: newScale,
           isTransitioning: false,
-        };
-      });
-    }
-  }, [containerRef]);
+        });
+        dragDistanceRef.current = 25;
+      } else if (isPanning && e.touches.length === 1) {
+        const t = e.touches[0];
+        const dx = t.clientX - panStartX;
+        const dy = t.clientY - panStartY;
+        const dist = Math.hypot(dx, dy);
+        dragDistanceRef.current = dist;
 
-  const handleTouchEnd = useCallback(() => {
-    touchDistRef.current = null;
-  }, []);
+        if (dist > 6) {
+          e.preventDefault();
+          setIsDragging(true);
+          setCamera(prev => ({
+            ...prev,
+            x: panStartCamX + dx,
+            y: panStartCamY + dy,
+            isTransitioning: false,
+          }));
+        }
+      }
+    };
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (e.touches.length === 0) {
+        isPinching = false;
+        isPanning = false;
+        setIsDragging(false);
+        setTimeout(() => {
+          dragDistanceRef.current = 0;
+        }, 80);
+      } else if (e.touches.length === 1) {
+        isPinching = false;
+        isPanning = true;
+        const t = e.touches[0];
+        panStartX = t.clientX;
+        panStartY = t.clientY;
+        panStartCamX = cameraRef.current.x;
+        panStartCamY = cameraRef.current.y;
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: false });
+    el.addEventListener('touchmove', onTouchMove, { passive: false });
+    el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
+
+    return () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }, [containerRef]);
 
   return {
     camera,
@@ -370,13 +448,10 @@ export function useViewportCamera({
       }, 340);
     },
     listeners: {
-      onPointerDown: handlePointerDown,
-      onPointerMove: handlePointerMove,
-      onPointerUp: handlePointerUp,
-      onPointerCancel: handlePointerUp,
-      onTouchStart: handleTouchStart,
-      onTouchMove: handleTouchMove,
-      onTouchEnd: handleTouchEnd,
+      onMouseDown: handleMouseDown,
+      onMouseMove: handleMouseMove,
+      onMouseUp: handleMouseUp,
+      onMouseLeave: handleMouseUp,
     },
   };
 }

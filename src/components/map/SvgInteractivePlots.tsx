@@ -58,13 +58,13 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
     if (showCategories) {
       switch (plot.zone) {
         case 'Gold':
-          return isHovered ? 'rgba(245, 158, 11, 0.58)' : 'rgba(245, 158, 11, 0.40)';
+          return isHovered ? 'rgba(245, 158, 11, 0.48)' : 'rgba(245, 158, 11, 0.30)';
         case 'Platinum':
-          return isHovered ? 'rgba(236, 72, 153, 0.58)' : 'rgba(236, 72, 153, 0.40)';
+          return isHovered ? 'rgba(236, 72, 153, 0.48)' : 'rgba(236, 72, 153, 0.30)';
         case 'Diamond':
-          return isHovered ? 'rgba(56, 189, 248, 0.58)' : 'rgba(56, 189, 248, 0.40)';
+          return isHovered ? 'rgba(56, 189, 248, 0.48)' : 'rgba(56, 189, 248, 0.30)';
         default:
-          return isHovered ? 'rgba(14, 165, 233, 0.40)' : 'rgba(14, 165, 233, 0.25)';
+          return isHovered ? 'rgba(14, 165, 233, 0.35)' : 'rgba(14, 165, 233, 0.20)';
       }
     }
 
@@ -185,6 +185,36 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
                 transition: 'fill 0.15s ease, stroke 0.15s ease',
               }}
             />
+
+            {/* Common Plot Center Label */}
+            <g
+              transform={`translate(${cp.center[0]}, ${cp.center[1]})`}
+              className="pointer-events-none select-none"
+            >
+              <rect
+                x="-80"
+                y="-24"
+                width="160"
+                height="48"
+                rx="12"
+                fill="rgba(15, 23, 42, 0.85)"
+                stroke="#84cc16"
+                strokeWidth="2.5"
+                style={{ filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }}
+              />
+              <text
+                x="0"
+                y="1"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill="#ffffff"
+                fontSize="24"
+                fontWeight="900"
+                fontFamily="system-ui, -apple-system, sans-serif"
+              >
+                {cp.label}
+              </text>
+            </g>
           </g>
         );
       })}
@@ -238,6 +268,36 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
               />
             )}
 
+
+            {/* Vector Plot Number Label: Crisp, High-Contrast, Visible on All Mobile Screens */}
+            <g
+              transform={`translate(${plot.center[0]}, ${plot.center[1]})`}
+              className="pointer-events-none select-none"
+            >
+              <circle
+                r="30"
+                fill={isSelected ? '#0284c7' : 'rgba(15, 23, 42, 0.78)'}
+                stroke={isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.45)'}
+                strokeWidth="2.5"
+                style={{
+                  vectorEffect: 'non-scaling-stroke',
+                  filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.6))',
+                  transition: 'fill 0.15s ease, stroke 0.15s ease',
+                }}
+              />
+              <text
+                x="0"
+                y="1"
+                textAnchor="middle"
+                dominantBaseline="central"
+                fill="#ffffff"
+                fontSize="26"
+                fontWeight="900"
+                fontFamily="system-ui, -apple-system, sans-serif"
+              >
+                {plot.number}
+              </text>
+            </g>
 
             {/* Crisp Hover Tooltip Callout when hovering */}
             {isHovered && !isSelected && (

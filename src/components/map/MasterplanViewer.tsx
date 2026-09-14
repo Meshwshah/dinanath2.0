@@ -36,6 +36,9 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
   onPlotClick,
   onPlotHover,
   onBackdropClick,
+  zoomIn,
+  zoomOut,
+  resetCamera,
   listeners,
   wasDragged,
 }) => {
@@ -57,13 +60,10 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
           ? 'bg-[#060a12]'
           : 'bg-[#1F1F1F]'
       }`}
-      onPointerDown={listeners.onPointerDown}
-      onPointerMove={listeners.onPointerMove}
-      onPointerUp={listeners.onPointerUp}
-      onPointerCancel={listeners.onPointerUp}
-      onTouchStart={listeners.onTouchStart}
-      onTouchMove={listeners.onTouchMove}
-      onTouchEnd={listeners.onTouchEnd}
+      onMouseDown={listeners.onMouseDown}
+      onMouseMove={listeners.onMouseMove}
+      onMouseUp={listeners.onMouseUp}
+      onMouseLeave={listeners.onMouseLeave}
       onClick={(e) => {
         // If the user was dragging/panning the map, do not trigger deselect
         if (wasDragged && wasDragged()) return;
@@ -206,6 +206,42 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
           </button>
         </div>
       )}
+
+      {/* Floating Zoom & Recenter Controls (Right Edge, thumb-friendly on mobile) */}
+      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1.5 pointer-events-auto">
+        <button
+          onClick={zoomIn}
+          className="w-10 h-10 rounded-xl bg-[#1c1c1c]/90 hover:bg-[#2c2c2c] active:scale-90 text-white border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-center transition-all"
+          title="Zoom In"
+        >
+          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+        <button
+          onClick={zoomOut}
+          className="w-10 h-10 rounded-xl bg-[#1c1c1c]/90 hover:bg-[#2c2c2c] active:scale-90 text-white border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-center transition-all"
+          title="Zoom Out"
+        >
+          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+        <button
+          onClick={resetCamera}
+          className="w-10 h-10 rounded-xl bg-[#1c1c1c]/90 hover:bg-[#2c2c2c] active:scale-90 text-cyan-400 border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-center transition-all"
+          title="Fit & Recenter Masterplan"
+        >
+          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="7" />
+            <line x1="12" y1="2" x2="12" y2="5" />
+            <line x1="12" y1="19" x2="12" y2="22" />
+            <line x1="2" y1="12" x2="5" y2="12" />
+            <line x1="19" y1="12" x2="22" y2="12" />
+          </svg>
+        </button>
+      </div>
 
       {/* Subtle Scale & Status Indicator (Bottom Left) */}
       <div className="absolute bottom-6 left-6 z-10 pointer-events-none hidden md:flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-slate-900/70 border border-white/10 backdrop-blur-md text-xs font-mono text-slate-400">
