@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SITE, whatsappInquiryUrl } from '../../data/siteConfig';
-import { IconX, IconWhatsApp, IconPhone, IconCheck } from '../common/Icons';
+import { IconX, IconWhatsApp, IconPhone } from '../common/Icons';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -11,25 +11,12 @@ interface ContactModalProps {
 export const ContactModal: React.FC<ContactModalProps> = ({
   isOpen,
   onClose,
-  onSuccessToast,
 }) => {
-  const [copied, setCopied] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
 
   if (!isOpen) return null;
-
-  const handleCopyPhone = () => {
-    navigator.clipboard.writeText(SITE.contactPhone.replace(/\s+/g, ''));
-    setCopied(true);
-    onSuccessToast?.('Phone number copied to clipboard!');
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleCall = () => {
-    window.location.href = `tel:${SITE.contactPhone.replace(/\s+/g, '')}`;
-  };
 
   const handleWhatsApp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,38 +70,61 @@ export const ContactModal: React.FC<ContactModalProps> = ({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-gradient-to-br from-[#242424] to-[#1c1c1c] border border-white/10 mb-5">
-          <div className="text-[11px] text-slate-400 font-medium mb-1">Official Sales & Inquiry Line</div>
-          <div className="flex items-center justify-between">
-            <span className="text-xl sm:text-2xl font-black font-mono tracking-wide text-white">
-              {SITE.contactPhone}
-            </span>
-            <button
-              onClick={handleCopyPhone}
-              className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 text-xs font-semibold flex items-center gap-1 transition-all"
-            >
-              {copied ? <IconCheck size={14} className="text-emerald-400" /> : null}
-              {copied ? 'Copied' : 'Copy'}
-            </button>
+        <div className="space-y-2.5 mb-4">
+          {/* Phone Line 1 */}
+          <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10">
+            <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Sales Line 1</div>
+            <div className="flex items-center justify-between">
+              <span className="text-base sm:text-lg font-black font-mono tracking-wide text-white">
+                {SITE.contactPhone}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <a
+                  href={`tel:${SITE.contactPhone.replace(/\s+/g, '')}`}
+                  className="px-2.5 py-1 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-cyan-900/30"
+                >
+                  <IconPhone size={12} />
+                  <span>Call</span>
+                </a>
+                <a
+                  href={whatsappInquiryUrl(undefined, undefined, SITE.contactPhone)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-emerald-900/30"
+                >
+                  <IconWhatsApp size={12} />
+                  <span>WhatsApp</span>
+                </a>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 mt-4">
-            <button
-              onClick={handleCall}
-              className="w-full py-2.5 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-cyan-600/30 transition-all active:scale-95"
-            >
-              <IconPhone size={16} />
-              <span>Call Now</span>
-            </button>
-            <a
-              href={whatsappInquiryUrl()}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 transition-all active:scale-95"
-            >
-              <IconWhatsApp size={16} />
-              <span>WhatsApp</span>
-            </a>
+          {/* Phone Line 2 */}
+          <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10">
+            <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Sales Line 2</div>
+            <div className="flex items-center justify-between">
+              <span className="text-base sm:text-lg font-black font-mono tracking-wide text-white">
+                {SITE.contactPhone2}
+              </span>
+              <div className="flex items-center gap-1.5">
+                <a
+                  href={`tel:${SITE.contactPhone2.replace(/\s+/g, '')}`}
+                  className="px-2.5 py-1 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-cyan-900/30"
+                >
+                  <IconPhone size={12} />
+                  <span>Call</span>
+                </a>
+                <a
+                  href={whatsappInquiryUrl(undefined, undefined, SITE.contactPhone2)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-emerald-900/30"
+                >
+                  <IconWhatsApp size={12} />
+                  <span>WhatsApp</span>
+                </a>
+              </div>
+            </div>
           </div>
         </div>
 

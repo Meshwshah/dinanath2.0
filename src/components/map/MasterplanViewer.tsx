@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { PlotData, ViewMode, CameraState } from '../../types/masterplan';
 import { CANVAS_BOUNDS } from '../../data/plotsData';
 import { SvgBaseBlueprint } from './SvgBaseBlueprint';
@@ -18,9 +18,9 @@ interface MasterplanViewerProps {
   onPlotClick: (plot: PlotData) => void;
   onPlotHover: (plotId: string | null) => void;
   onBackdropClick: () => void;
-  zoomIn: () => void;
-  zoomOut: () => void;
-  resetCamera: () => void;
+  zoomIn?: () => void;
+  zoomOut?: () => void;
+  resetCamera?: () => void;
   listeners: Record<string, any>;
   wasDragged?: () => boolean;
 }
@@ -38,17 +38,14 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
   onPlotClick,
   onPlotHover,
   onBackdropClick,
-  zoomIn,
-  zoomOut,
-  resetCamera,
   listeners,
   wasDragged,
 }) => {
   const is3D = viewMode === '3D';
 
-  // Simple, normal 3D architectural isometric perspective state
-  const [pitch, setPitch] = useState(28); // gentle 28° architectural tilt
-  const [yaw, setYaw] = useState(-10); // subtle -10° isometric perspective
+  // Simple, normal 3D architectural isometric perspective
+  const pitch = 28; // gentle 28° architectural tilt
+  const yaw = -10; // subtle -10° isometric perspective
 
   return (
     <div
@@ -146,105 +143,6 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
         </div>
       </div>
 
-      {/* 3D SIMPLE CONTROL BAR (Only displayed in 3D Mode) */}
-      {is3D && (
-        <div className="absolute top-20 left-4 sm:left-6 z-30 pointer-events-auto flex items-center gap-2 p-2 rounded-2xl bg-[#1c1c1c]/90 border border-white/10 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center gap-2 px-2.5 py-1 text-xs font-bold text-white">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-            <span>3D Isometric</span>
-          </div>
-
-          <div className="h-4 w-px bg-white/10" />
-
-          {/* Preset Buttons */}
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => { setPitch(28); setYaw(-10); }}
-              className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
-                pitch === 28 && yaw === -10
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
-                  : 'bg-white/5 hover:bg-white/10 text-slate-300'
-              }`}
-            >
-              Isometric
-            </button>
-            <button
-              onClick={() => { setPitch(20); setYaw(0); }}
-              className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-all ${
-                pitch === 20 && yaw === 0
-                  ? 'bg-cyan-500 text-slate-950 font-bold'
-                  : 'bg-white/5 hover:bg-white/10 text-slate-300'
-              }`}
-            >
-              Top Tilt
-            </button>
-          </div>
-
-          <div className="h-4 w-px bg-white/10" />
-
-          {/* Simple Tilt Stepper / Slider */}
-          <div className="flex items-center gap-1 text-xs text-slate-300 px-1">
-            <span className="text-[10px] font-mono text-cyan-400">{pitch}°</span>
-            <input
-              type="range"
-              min="0"
-              max="45"
-              value={pitch}
-              onChange={(e) => setPitch(Number(e.target.value))}
-              className="w-16 h-1 bg-[#333] rounded-lg appearance-none cursor-pointer accent-cyan-400"
-              title="Adjust 3D tilt angle"
-            />
-          </div>
-
-          {/* Reset View */}
-          <button
-            onClick={() => { setPitch(28); setYaw(-10); }}
-            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all text-xs"
-            title="Reset 3D Angle"
-          >
-            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {/* Floating Zoom & Recenter Controls (Right Edge, thumb-friendly on mobile) */}
-      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-1.5 pointer-events-auto">
-        <button
-          onClick={zoomIn}
-          className="w-10 h-10 rounded-xl bg-[#1c1c1c]/90 hover:bg-[#2c2c2c] active:scale-90 text-white border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-center transition-all"
-          title="Zoom In"
-        >
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </button>
-        <button
-          onClick={zoomOut}
-          className="w-10 h-10 rounded-xl bg-[#1c1c1c]/90 hover:bg-[#2c2c2c] active:scale-90 text-white border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-center transition-all"
-          title="Zoom Out"
-        >
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </button>
-        <button
-          onClick={resetCamera}
-          className="w-10 h-10 rounded-xl bg-[#1c1c1c]/90 hover:bg-[#2c2c2c] active:scale-90 text-cyan-400 border border-white/15 backdrop-blur-xl shadow-xl flex items-center justify-center transition-all"
-          title="Fit & Recenter Masterplan"
-        >
-          <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="7" />
-            <line x1="12" y1="2" x2="12" y2="5" />
-            <line x1="12" y1="19" x2="12" y2="22" />
-            <line x1="2" y1="12" x2="5" y2="12" />
-            <line x1="19" y1="12" x2="22" y2="12" />
-          </svg>
-        </button>
-      </div>
 
       {/* Subtle Scale & Status Indicator (Bottom Left) */}
       <div className="absolute bottom-6 left-6 z-10 pointer-events-none hidden md:flex items-center gap-3 px-3.5 py-1.5 rounded-full bg-slate-900/70 border border-white/10 backdrop-blur-md text-xs font-mono text-slate-400">

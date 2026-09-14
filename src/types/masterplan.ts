@@ -58,6 +58,7 @@ export interface SiteInfo {
   architect: string;
   engineer: string;
   contactPhone: string;
+  contactPhone2: string;
   contactEmail: string;
   officeAddress: string;
   location: string;

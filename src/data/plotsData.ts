@@ -92,7 +92,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Prime Highway-Frontage Corner', 'Triple Axle Container Access', 'Heavy Industrial Power Ready'],
     price: { ratePerSft: '₹1,850 / sq.ft', totalEstimate: '₹1.95 Cr' },
-    ...makePoly([[99.2, 4200.7], [442.1, 4200.7], [442.1, 4840.5], [123.8, 4840.5]]),
+    ...makePoly([[99.2, 4200.7], [442.1, 4200.7], [442.1, 4923.0], [123.8, 4912.0]]),
   },
   {
     id: 'plot-2',
@@ -106,8 +106,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Direct East Road Frontage', 'Industrial Borewell Permissions'],
     price: { ratePerSft: '₹1,800 / sq.ft', totalEstimate: '₹1.62 Cr' },
-    ...makeRect(442.1, 4205.7, 282.3, 681.8),
-  
+    ...makePoly([[442.1, 4205.7], [724.4, 4205.7], [724.4, 4933.0], [442.1, 4923.0]]),
   },
   {
     id: 'plot-3',
@@ -121,7 +120,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Highway Frontage', 'Optimum Warehouse Width'],
     price: { ratePerSft: '₹1,800 / sq.ft', totalEstimate: '₹1.65 Cr' },
-    ...makeRect(724.4, 4205.7, 277.9, 660.3),
+    ...makePoly([[724.4, 4205.7], [1002.3, 4205.7], [1002.3, 4942.0], [724.4, 4933.0]]),
   },
   {
     id: 'plot-4',
@@ -135,7 +134,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Logistics Friendly', '40ft Container Turn Radius'],
     price: { ratePerSft: '₹1,800 / sq.ft', totalEstimate: '₹1.67 Cr' },
-    ...makeRect(1002.3, 4205.7, 277.9, 671.6),
+    ...makePoly([[1002.3, 4205.7], [1280.2, 4205.7], [1280.2, 4952.0], [1002.3, 4942.0]]),
   },
   {
     id: 'plot-5',
@@ -149,7 +148,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Wide Frontage', 'Zero Waterlogging Elevation'],
     price: { ratePerSft: '₹1,800 / sq.ft', totalEstimate: '₹1.70 Cr' },
-    ...makeRect(1280.2, 4205.7, 277.8, 681.8),
+    ...makePoly([[1280.2, 4205.7], [1558.0, 4205.7], [1558.0, 4961.0], [1280.2, 4952.0]]),
   },
   {
     id: 'plot-6',
@@ -163,8 +162,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Corner to Cross-Over Road', 'High Visibility Commercial Potential'],
     price: { ratePerSft: '₹1,850 / sq.ft', totalEstimate: '₹1.75 Cr' },
-    ...makePoly([[1558.0, 4205.7], [1845.0, 4205.7], [1845.0, 4830.0], [1836.0, 4865.0], [1815.0, 4898.8], [1558.0, 4898.8]]),
-  
+    ...makePoly([[1558.0, 4205.7], [1845.0, 4205.7], [1845.0, 4920.0], [1836.0, 4950.0], [1815.0, 4970.0], [1558.0, 4961.0]]),
   },
 
   // Facing 12.00 MT Wide Road (Plots 7 to 12)
@@ -969,7 +967,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '9.00 MT. WIDE ROAD',
     features: ['North Tree Plantation Buffer', '5,587 sqft Area', 'Dual Gate Support'],
     price: { ratePerSft: '₹1,680 / sq.ft', totalEstimate: '₹93.9 Lakh' },
-    ...makePoly([[2770.0, 2363.5], [3002.0, 2363.5], [3033.0, 2880.7], [2770.0, 2880.7]]),
+    ...makePoly([[2770.0, 2363.5], [2989.0, 2363.5], [3035.0, 2885.7], [2770.0, 2885.7]]),
   
   },
 
@@ -1031,7 +1029,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '12.00 MT. WIDE ROAD',
     features: ['Largest Platinum Unit (6,028 sqft)', 'North Boundary Greenery'],
     price: { ratePerSft: '₹1,680 / sq.ft', totalEstimate: '₹1.01 Cr' },
-    ...makePoly([[2770.0, 2885.7], [3033.0, 2885.7], [3064.0, 3402.9], [2770.0, 3402.9]]),
+    ...makePoly([[2770.0, 2885.7], [3035.0, 2885.7], [3026.0, 3402.9], [2770.0, 3402.9]]),
   
   },
 
@@ -1094,7 +1092,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Corner to 17.5m Cross-Road', 'Direct Access to Main State Highway Link'],
     price: { ratePerSft: '₹1,850 / sq.ft', totalEstimate: '₹1.82 Cr' },
-    ...makePoly([[2106.0, 4205.7], [2384.0, 4205.7], [2384.0, 4924.6], [2136.0, 4924.6], [2115.0, 4895.0], [2106.0, 4865.0]]),
+    ...makePoly([[2106.0, 4205.7], [2384.0, 4205.7], [2384.0, 5003.0], [2136.0, 4985.0], [2115.0, 4950.0], [2106.0, 4920.0]]),
   
   },
   {
@@ -1109,7 +1107,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['Over 10,000 sqft', 'Massive Road Frontage', 'Flagship Corporate Shed Site'],
     price: { ratePerSft: '₹1,850 / sq.ft', totalEstimate: '₹1.88 Cr' },
-    ...makeRect(2384.0, 4205.7, 277.9, 738.0),
+    ...makePoly([[2384.0, 4205.7], [2661.9, 4205.7], [2661.9, 5024.0], [2384.0, 5003.0]]),
   },
   {
     id: 'plot-69',
@@ -1123,7 +1121,7 @@ export const PLOTS_DATA: PlotData[] = [
     roadFrontage: '18.00 MT. WIDE EXIST. NALIYA ROAD',
     features: ['LARGEST PLOT IN PARK (12,567 sqft)', 'North-East Corner Landmark', 'Maximum Highway Visibility'],
     price: { ratePerSft: '₹1,900 / sq.ft', totalEstimate: '₹2.39 Cr' },
-    ...makePoly([[2657.6, 4200.7], [3001.7, 4200.7], [2985.9, 4960.0], [2657.6, 4960.0]]),
+    ...makePoly([[2661.9, 4200.7], [3001.7, 4200.7], [2985.9, 5048.0], [2661.9, 5024.0]]),
   },
 ];
 

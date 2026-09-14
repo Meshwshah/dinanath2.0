@@ -13,7 +13,7 @@ const SQFT_RANGES = [
   { label: 'Under 2,500 sq.ft', min: 0, max: 2500, desc: 'Compact Micro Industrial' },
   { label: '2,500 – 3,500 sq.ft', min: 2500, max: 3500, desc: 'Standard Gold Units' },
   { label: '3,500 – 6,000 sq.ft', min: 3500, max: 6000, desc: 'Medium Platinum Sheds' },
-  { label: '6,000 – 11,000 sq.ft', min: 6000, max: 12000, desc: 'Heavy Diamond Footprints' },
+  { label: '6,000 – 13,000 sq.ft', min: 6000, max: 13000, desc: 'Heavy Diamond & Flagship Plots' },
 ];
 
 export const PlotSearchTypeahead: React.FC<PlotSearchTypeaheadProps> = ({

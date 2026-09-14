@@ -137,13 +137,24 @@ export const ProjectInfoModal: React.FC<ProjectInfoModalProps> = ({ isOpen, onCl
             <IconExternalLink size={13} />
           </a>
 
-          <a
-            href={`tel:${SITE.contactPhone}`}
-            className="w-full sm:w-auto py-3 px-5 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs flex items-center justify-center gap-2 transition-colors"
-          >
-            <IconPhone size={15} />
-            <span>Call: {SITE.contactPhone}</span>
-          </a>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <a
+              href={`tel:${SITE.contactPhone.replace(/\s+/g, '')}`}
+              className="flex-1 sm:flex-initial py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+              title={`Call: ${SITE.contactPhone}`}
+            >
+              <IconPhone size={14} className="text-cyan-400" />
+              <span>{SITE.contactPhone}</span>
+            </a>
+            <a
+              href={`tel:${SITE.contactPhone2.replace(/\s+/g, '')}`}
+              className="flex-1 sm:flex-initial py-3 px-4 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+              title={`Call: ${SITE.contactPhone2}`}
+            >
+              <IconPhone size={14} className="text-emerald-400" />
+              <span>{SITE.contactPhone2}</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>

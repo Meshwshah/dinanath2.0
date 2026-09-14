@@ -1,7 +1,7 @@
-﻿import React, { useState } from 'react';
+﻿import React from 'react';
 import type { PlotData, ViewMode } from '../../types/masterplan';
 import { PlotSearchTypeahead } from './PlotSearchTypeahead';
-import { IconShare, IconLayers } from '../common/Icons';
+import { IconShare } from '../common/Icons';
 
 interface FloatingHudDockProps {
   showCategories: boolean;
@@ -32,8 +32,6 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
   onReset,
   searchRef,
 }) => {
-  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
-  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const is3D = viewMode === '3D';
 
   const toggle3D = () => {
@@ -44,11 +42,20 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
     <>
       {/* ============================================================
           MOBILE FLOATING CONTROLS (Viewport < 640px)
-          Categories and Status directly visible on screen without popup
+          Search bar positioned directly ABOVE the buttons for 1-tap access
           ============================================================ */}
       <div className="fixed bottom-3 left-2.5 right-2.5 z-30 sm:hidden pointer-events-auto flex flex-col items-center gap-1.5">
         
-        {/* Direct Active Legend Chip - Always visible without clicking any layers button */}
+        {/* 1. Mobile Search Bar - Directly above the buttons for easy access */}
+        <div className="w-full">
+          <PlotSearchTypeahead
+            onSelectPlot={onSelectPlot}
+            onSelectRange={onSelectRange}
+            searchRef={searchRef}
+          />
+        </div>
+
+        {/* 2. Direct Active Legend Chip - Always visible without clicking any layers button */}
         <div className="flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-[#1c1c1c]/95 border border-white/15 backdrop-blur-xl shadow-xl text-[10px] font-bold text-slate-200 tracking-wide select-none">
           {showStatus ? (
             <>
@@ -87,9 +94,9 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
           )}
         </div>
 
-        {/* Mobile Action Dock: 1-tap direct toggles for Categories and Status */}
+        {/* 3. Mobile Action Dock: 1-tap direct toggles for Categories, Status, 3D, Map & Share */}
         <div className="w-full flex items-center justify-between gap-1 p-1 rounded-2xl bg-[#1c1c1c]/95 border border-white/15 backdrop-blur-2xl shadow-2xl">
-          {/* 1. Direct Categories Button */}
+          {/* Categories Button */}
           <button
             onClick={onToggleCategories}
             className={`flex-1 h-9 px-2 rounded-xl text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 ${
@@ -102,7 +109,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
             <span>Categories</span>
           </button>
 
-          {/* 2. Direct Status Button */}
+          {/* Status Button */}
           <button
             onClick={onToggleStatus}
             className={`flex-1 h-9 px-2 rounded-xl text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 ${
@@ -115,23 +122,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
             <span>Status</span>
           </button>
 
-          {/* 3. Search Trigger Button */}
-          <button
-            onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
-            className={`h-9 px-2.5 rounded-xl text-[11px] font-semibold transition-all active:scale-95 flex items-center gap-1 ${
-              isMobileSearchOpen
-                ? 'bg-cyan-500 text-slate-950 font-bold'
-                : 'bg-[#262626] text-slate-200'
-            }`}
-          >
-            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <line x1="21" y1="21" x2="16.65" y2="16.65" />
-            </svg>
-            <span>Search</span>
-          </button>
-
-          {/* 4. 3D Mode Toggle */}
+          {/* 3D Mode Toggle */}
           <button
             onClick={toggle3D}
             className={`h-9 px-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-95 ${
@@ -143,7 +134,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
             3D
           </button>
 
-          {/* 5. Satellite Map Button */}
+          {/* Satellite Map Button */}
           <button
             onClick={onOpenMapView}
             className="h-9 px-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 active:scale-95 text-white text-[11px] font-bold shadow-md flex items-center gap-1"
@@ -156,7 +147,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
             <span>Map</span>
           </button>
 
-          {/* 6. Share Button */}
+          {/* Share Button */}
           <button
             onClick={onShare}
             className="w-9 h-9 rounded-xl bg-[#262626] active:scale-95 text-slate-300 flex items-center justify-center shrink-0"
@@ -164,59 +155,27 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
           >
             <IconShare size={14} />
           </button>
+
+          {/* Orient North / Reset View */}
+          <button
+            onClick={onReset}
+            className="w-9 h-9 rounded-xl bg-[#262626] active:scale-90 text-cyan-400 flex items-center justify-center shrink-0"
+            title="Orient North / Reset View"
+          >
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="12 2 19 21 12 17 5 21 12 2" />
+            </svg>
+          </button>
         </div>
       </div>
 
-      {/* MOBILE POPUP: Search Bar Overlay */}
-      {isMobileSearchOpen && (
-        <div className="fixed bottom-24 left-3 right-3 z-30 sm:hidden pointer-events-auto animate-scale-in">
-          <div className="p-3 rounded-2xl bg-[#1c1c1c]/98 border border-white/15 backdrop-blur-2xl shadow-2xl">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-slate-300">Search Plot or Size</span>
-              <button
-                onClick={() => setIsMobileSearchOpen(false)}
-                className="text-slate-400 hover:text-white p-1"
-              >
-                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            </div>
-            <PlotSearchTypeahead
-              onSelectPlot={(p) => {
-                onSelectPlot(p);
-                setIsMobileSearchOpen(false);
-              }}
-              onSelectRange={(min, max, plots) => {
-                onSelectRange?.(min, max, plots);
-                setIsMobileSearchOpen(false);
-              }}
-              searchRef={searchRef}
-            />
-          </div>
-        </div>
-      )}
-
       {/* ============================================================
           DESKTOP FLOATING HUD DOCK (Viewport >= 640px)
+          Always accessible without extra layer toggle button
           ============================================================ */}
       <div className="fixed bottom-6 right-6 z-30 hidden sm:flex flex-col items-end pointer-events-none gap-2.5">
-        {/* Toggle Collapse Button on Desktop */}
-        <button
-          onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
-          className="pointer-events-auto p-2 rounded-full bg-[#1c1c1c]/95 text-white border border-white/15 shadow-xl backdrop-blur-md hover:bg-[#2c2c2c] transition-all"
-          title="Toggle Controls Panel"
-        >
-          <IconLayers size={18} />
-        </button>
-
         {/* 1. TOP MINI DOCK ROW: [ 3D | Share | Compass ] */}
-        <div
-          className={`pointer-events-auto flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#1c1c1c]/95 border border-white/10 shadow-2xl backdrop-blur-xl transition-all ${
-            isDesktopCollapsed ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-100 scale-100'
-          }`}
-        >
+        <div className="pointer-events-auto flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#1c1c1c]/95 border border-white/10 shadow-2xl backdrop-blur-xl">
           <button
             onClick={toggle3D}
             className={`h-10 px-3.5 rounded-xl text-xs font-black tracking-wider transition-all active:scale-95 shadow-sm flex items-center justify-center ${
@@ -249,11 +208,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
         </div>
 
         {/* 2. MAIN DOCK CONTAINER (Desktop) */}
-        <div
-          className={`pointer-events-auto w-[320px] rounded-2xl p-2.5 flex flex-col gap-2 shadow-2xl border border-white/10 bg-[#1c1c1c]/95 backdrop-blur-2xl transition-all duration-300 ${
-            isDesktopCollapsed ? 'opacity-0 scale-95 pointer-events-none h-0 p-0 overflow-hidden' : 'opacity-100 scale-100'
-          }`}
-        >
+        <div className="pointer-events-auto w-[320px] rounded-2xl p-2.5 flex flex-col gap-2 shadow-2xl border border-white/10 bg-[#1c1c1c]/95 backdrop-blur-2xl">
           {/* Categories Toggle */}
           <div
             id="toggle-categories-btn"

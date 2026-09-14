@@ -184,13 +184,24 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
             <span>Inquire About This Plot</span>
           </button>
 
-          <a
-            href={`tel:${SITE.contactPhone}`}
-            className="w-full py-2.5 px-4 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-xs flex items-center justify-center gap-2 border border-white/5 transition-colors"
-          >
-            <IconPhone size={14} />
-            <span>Call Developer: {SITE.contactPhone}</span>
-          </a>
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href={`tel:${SITE.contactPhone.replace(/\s+/g, '')}`}
+              className="py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-[11px] flex items-center justify-center gap-1.5 border border-white/5 transition-colors"
+              title={`Call: ${SITE.contactPhone}`}
+            >
+              <IconPhone size={12} className="text-cyan-400 shrink-0" />
+              <span className="truncate">{SITE.contactPhone}</span>
+            </a>
+            <a
+              href={`tel:${SITE.contactPhone2.replace(/\s+/g, '')}`}
+              className="py-2 px-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-medium text-[11px] flex items-center justify-center gap-1.5 border border-white/5 transition-colors"
+              title={`Call: ${SITE.contactPhone2}`}
+            >
+              <IconPhone size={12} className="text-emerald-400 shrink-0" />
+              <span className="truncate">{SITE.contactPhone2}</span>
+            </a>
+          </div>
         </div>
       </aside>
 

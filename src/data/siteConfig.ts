@@ -8,6 +8,7 @@ export const SITE: SiteInfo = {
   architect: 'arya associates',
   engineer: 'Nitin Kapadi',
   contactPhone: '+91 6354 045 409',
+  contactPhone2: '+91 9426 025 111',
   contactEmail: 'nitinkapadi@yahoo.com',
   officeAddress: '301, Silver Coin Complex, Nr. Cow Circle, Akota, Vadodara - 390020',
   location: 'Manglej, Karjan, Vadodara, Gujarat',
@@ -36,8 +37,9 @@ export function googleMapsDirectionsUrl(): string {
   return `https://www.google.com/maps/dir/?api=1&destination=${SITE.lat},${SITE.lng}`;
 }
 
-export function whatsappInquiryUrl(plotNumber?: number | string, areaSft?: number): string {
-  const cleanPhone = SITE.contactPhone.replace(/[^0-9]/g, '');
+export function whatsappInquiryUrl(plotNumber?: number | string, areaSft?: number, targetPhone?: string): string {
+  const phoneToUse = targetPhone || SITE.contactPhone;
+  const cleanPhone = phoneToUse.replace(/[^0-9]/g, '');
   let message = `Hello, I am interested in purchasing a plot at Dinanath Industrial Park. Please share the available plot sizes, pricing, location details, amenities, and payment options. I would also like to know the site visit availability.\n\nThank you.`;
   if (plotNumber) {
     message = `Hello, I am interested in purchasing Plot #${plotNumber}${areaSft ? ` (${areaSft.toLocaleString()} Sq.Ft.)` : ''} at Dinanath Industrial Park. Please share the pricing, location details, amenities, payment options, and site visit availability.\n\nThank you.`;

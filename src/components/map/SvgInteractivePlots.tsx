@@ -256,57 +256,6 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
               />
             )}
 
-            {/* Crisp Hover Tooltip Callout when hovering */}
-            {isHovered && !isSelected && (
-              <g
-                transform={`translate(${plot.center[0]}, ${plot.bbox.y - 20})`}
-                className="pointer-events-none select-none"
-              >
-                <rect
-                  x="-75"
-                  y="-18"
-                  width="150"
-                  height="34"
-                  rx="8"
-                  fill="rgba(15, 23, 42, 0.95)"
-                  stroke="#0284c7"
-                  strokeWidth="1.5"
-                  style={{
-                    vectorEffect: 'non-scaling-stroke',
-                    filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))',
-                  }}
-                />
-                <text
-                  x="0"
-                  y="-2"
-                  fill="#ffffff"
-                  fontSize="13"
-                  fontFamily="sans-serif"
-                  fontWeight="800"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                >
-                  {plot.label} • {plot.areaSmt} SMT
-                </text>
-                <text
-                  x="0"
-                  y="12"
-                  fill={
-                    plot.status === 'Available'
-                      ? '#4ade80'
-                      : plot.status === 'On Hold'
-                      ? '#fbbf24'
-                      : '#f87171'
-                  }
-                  fontSize="10"
-                  fontFamily="sans-serif"
-                  fontWeight="700"
-                  textAnchor="middle"
-                >
-                  {plot.zone} Zone • {plot.status}
-                </text>
-              </g>
-            )}
           </g>
         );
       })}
