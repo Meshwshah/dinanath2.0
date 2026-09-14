@@ -12,6 +12,7 @@ interface MasterplanViewerProps {
   viewMode: ViewMode;
   selectedPlot: PlotData | null;
   hoveredPlotId: string | null;
+  highlightedPlotIds?: string[];
   showCategories: boolean;
   showStatus: boolean;
   onPlotClick: (plot: PlotData) => void;
@@ -31,6 +32,7 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
   viewMode,
   selectedPlot,
   hoveredPlotId,
+  highlightedPlotIds = [],
   showCategories,
   showStatus,
   onPlotClick,
@@ -128,6 +130,7 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
               <SvgInteractivePlots
                 selectedPlotId={selectedPlot?.id ?? null}
                 hoveredPlotId={hoveredPlotId}
+                highlightedPlotIds={highlightedPlotIds}
                 showCategories={showCategories}
                 showStatus={showStatus}
                 viewMode={viewMode}

@@ -5,6 +5,7 @@ import { PLOTS_DATA, COMMON_PLOTS, pointsToPath } from '../../data/plotsData';
 interface SvgInteractivePlotsProps {
   selectedPlotId: string | null;
   hoveredPlotId: string | null;
+  highlightedPlotIds?: string[];
   showCategories: boolean;
   showStatus: boolean;
   viewMode: ViewMode;
@@ -16,6 +17,7 @@ interface SvgInteractivePlotsProps {
 export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
   selectedPlotId,
   hoveredPlotId,
+  highlightedPlotIds = [],
   showCategories,
   showStatus,
   onPlotClick,
@@ -23,33 +25,45 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
   wasDragged,
 }) => {
   // Helper to determine plot fill color
-  const getPlotFill = (plot: PlotData, isHovered: boolean, isSelected: boolean): string => {
+  const getPlotFill = (plot: PlotData, isHovered: boolean, isSelected: boolean, isHighlighted: boolean): string => {
     if (isSelected) {
       if (showStatus) {
         switch (plot.status) {
-          case 'Available': return 'rgba(34, 197, 94, 0.65)';
-          case 'On Hold': return 'rgba(245, 158, 11, 0.65)';
-          case 'Sold': return 'rgba(239, 68, 68, 0.65)';
+          case 'Available': return 'rgba(34, 197, 94, 0.85)';
+          case 'On Hold': return 'rgba(245, 158, 11, 0.85)';
+          case 'Sold': return 'rgba(220, 38, 38, 0.85)';
         }
       }
       switch (plot.zone) {
-        case 'Gold': return 'rgba(245, 158, 11, 0.52)';
-        case 'Platinum': return 'rgba(236, 72, 153, 0.52)';
-        case 'Diamond': return 'rgba(56, 189, 248, 0.52)';
-        default: return 'rgba(14, 165, 233, 0.45)';
+        case 'Gold': return 'rgba(245, 158, 11, 0.65)';
+        case 'Platinum': return 'rgba(236, 72, 153, 0.65)';
+        case 'Diamond': return 'rgba(56, 189, 248, 0.65)';
+        default: return 'rgba(14, 165, 233, 0.55)';
       }
     }
 
+    // When plot is matched by range search, glow prominently!
+    if (isHighlighted) {
+      if (showStatus) {
+        switch (plot.status) {
+          case 'Available': return 'rgba(34, 197, 94, 0.80)';
+          case 'On Hold': return 'rgba(245, 158, 11, 0.80)';
+          case 'Sold': return 'rgba(220, 38, 38, 0.80)';
+        }
+      }
+      return 'rgba(56, 189, 248, 0.55)';
+    }
+
     // When Status toggle is clicked (ON):
-    // Colors clearly indicate inventory status across all plots!
+    // Vivid bright status colors: bright light green, dark yellow / rich orange, dark red
     if (showStatus) {
       switch (plot.status) {
         case 'Available':
-          return isHovered ? 'rgba(34, 197, 94, 0.60)' : 'rgba(34, 197, 94, 0.44)';
+          return isHovered ? 'rgba(34, 197, 94, 0.80)' : 'rgba(34, 197, 94, 0.65)';
         case 'On Hold':
-          return isHovered ? 'rgba(245, 158, 11, 0.62)' : 'rgba(245, 158, 11, 0.45)';
+          return isHovered ? 'rgba(245, 158, 11, 0.82)' : 'rgba(245, 158, 11, 0.68)';
         case 'Sold':
-          return isHovered ? 'rgba(239, 68, 68, 0.62)' : 'rgba(239, 68, 68, 0.45)';
+          return isHovered ? 'rgba(220, 38, 38, 0.82)' : 'rgba(220, 38, 38, 0.68)';
       }
     }
 
@@ -58,68 +72,70 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
     if (showCategories) {
       switch (plot.zone) {
         case 'Gold':
-          return isHovered ? 'rgba(245, 158, 11, 0.48)' : 'rgba(245, 158, 11, 0.30)';
+          return isHovered ? 'rgba(245, 158, 11, 0.55)' : 'rgba(245, 158, 11, 0.38)';
         case 'Platinum':
-          return isHovered ? 'rgba(236, 72, 153, 0.48)' : 'rgba(236, 72, 153, 0.30)';
+          return isHovered ? 'rgba(236, 72, 153, 0.55)' : 'rgba(236, 72, 153, 0.38)';
         case 'Diamond':
-          return isHovered ? 'rgba(56, 189, 248, 0.48)' : 'rgba(56, 189, 248, 0.30)';
+          return isHovered ? 'rgba(56, 189, 248, 0.55)' : 'rgba(56, 189, 248, 0.38)';
         default:
-          return isHovered ? 'rgba(14, 165, 233, 0.35)' : 'rgba(14, 165, 233, 0.20)';
+          return isHovered ? 'rgba(14, 165, 233, 0.45)' : 'rgba(14, 165, 233, 0.28)';
       }
     }
 
     // Without clicking Categories or Status (both OFF):
-    // Colors are lightened / soft translucent pastel tint allowing blueprint to show through
     if (isHovered) {
       switch (plot.zone) {
-        case 'Gold': return 'rgba(245, 158, 11, 0.24)';
-        case 'Platinum': return 'rgba(236, 72, 153, 0.24)';
-        case 'Diamond': return 'rgba(56, 189, 248, 0.24)';
-        default: return 'rgba(14, 165, 233, 0.18)';
+        case 'Gold': return 'rgba(245, 158, 11, 0.32)';
+        case 'Platinum': return 'rgba(236, 72, 153, 0.32)';
+        case 'Diamond': return 'rgba(56, 189, 248, 0.32)';
+        default: return 'rgba(14, 165, 233, 0.25)';
       }
     }
     switch (plot.zone) {
       case 'Gold':
-        return 'rgba(245, 158, 11, 0.05)';
+        return 'rgba(245, 158, 11, 0.08)';
       case 'Platinum':
-        return 'rgba(236, 72, 153, 0.05)';
+        return 'rgba(236, 72, 153, 0.08)';
       case 'Diamond':
-        return 'rgba(56, 189, 248, 0.05)';
+        return 'rgba(56, 189, 248, 0.08)';
       default:
         return 'rgba(255, 255, 255, 0.001)';
     }
   };
 
   // Helper to determine plot stroke color
-  const getPlotStroke = (plot: PlotData, isHovered: boolean, isSelected: boolean): string => {
+  const getPlotStroke = (plot: PlotData, isHovered: boolean, isSelected: boolean, isHighlighted: boolean): string => {
     if (isSelected) {
-      return '#0284c7';
+      return '#38bdf8';
+    }
+    if (isHighlighted) {
+      return '#00e5ff'; // electric glowing cyan for range search highlighted plots
     }
     if (isHovered) {
-      return '#0284c7';
+      return '#38bdf8';
     }
 
     if (showStatus) {
       switch (plot.status) {
-        case 'Available': return 'rgba(22, 163, 74, 0.90)';
-        case 'On Hold': return 'rgba(217, 119, 6, 0.90)';
-        case 'Sold': return 'rgba(220, 38, 38, 0.90)';
+        case 'Available': return '#16a34a';
+        case 'On Hold': return '#d97706';
+        case 'Sold': return '#b91c1c';
       }
     }
 
     if (showCategories) {
       switch (plot.zone) {
-        case 'Gold': return 'rgba(217, 119, 6, 0.85)';
-        case 'Platinum': return 'rgba(219, 39, 119, 0.85)';
-        case 'Diamond': return 'rgba(14, 165, 233, 0.85)';
+        case 'Gold': return 'rgba(217, 119, 6, 0.95)';
+        case 'Platinum': return 'rgba(219, 39, 119, 0.95)';
+        case 'Diamond': return 'rgba(14, 165, 233, 0.95)';
       }
     }
 
     // When both are OFF, subtle stroke
     switch (plot.zone) {
-      case 'Gold': return 'rgba(217, 119, 6, 0.20)';
-      case 'Platinum': return 'rgba(219, 39, 119, 0.20)';
-      case 'Diamond': return 'rgba(14, 165, 233, 0.20)';
+      case 'Gold': return 'rgba(217, 119, 6, 0.25)';
+      case 'Platinum': return 'rgba(219, 39, 119, 0.25)';
+      case 'Diamond': return 'rgba(14, 165, 233, 0.25)';
       default: return 'transparent';
     }
   };
@@ -185,36 +201,6 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
                 transition: 'fill 0.15s ease, stroke 0.15s ease',
               }}
             />
-
-            {/* Common Plot Center Label */}
-            <g
-              transform={`translate(${cp.center[0]}, ${cp.center[1]})`}
-              className="pointer-events-none select-none"
-            >
-              <rect
-                x="-80"
-                y="-24"
-                width="160"
-                height="48"
-                rx="12"
-                fill="rgba(15, 23, 42, 0.85)"
-                stroke="#84cc16"
-                strokeWidth="2.5"
-                style={{ filter: 'drop-shadow(0 4px 10px rgba(0,0,0,0.5))' }}
-              />
-              <text
-                x="0"
-                y="1"
-                textAnchor="middle"
-                dominantBaseline="central"
-                fill="#ffffff"
-                fontSize="24"
-                fontWeight="900"
-                fontFamily="system-ui, -apple-system, sans-serif"
-              >
-                {cp.label}
-              </text>
-            </g>
           </g>
         );
       })}
@@ -223,8 +209,9 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
       {PLOTS_DATA.map(plot => {
         const isSelected = selectedPlotId === plot.id;
         const isHovered = hoveredPlotId === plot.id;
-        const fill = getPlotFill(plot, isHovered, isSelected);
-        const stroke = getPlotStroke(plot, isHovered, isSelected);
+        const isHighlighted = highlightedPlotIds.includes(plot.id);
+        const fill = getPlotFill(plot, isHovered, isSelected, isHighlighted);
+        const stroke = getPlotStroke(plot, isHovered, isSelected, isHighlighted);
         const pathD = pointsToPath(plot.points);
 
         return (
@@ -248,10 +235,11 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
               d={pathD}
               fill={fill}
               stroke={stroke}
-              strokeWidth={isHovered || isSelected ? 3 : 1.2}
+              strokeWidth={isHighlighted ? 3.5 : isHovered || isSelected ? 3 : 1.2}
               style={{
                 pointerEvents: 'all',
                 vectorEffect: 'non-scaling-stroke',
+                filter: isHighlighted ? 'drop-shadow(0 0 10px rgba(0, 229, 255, 0.9))' : undefined,
                 transition: 'fill 0.15s ease, stroke 0.15s ease',
               }}
             />
@@ -267,37 +255,6 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
                 style={{ vectorEffect: 'non-scaling-stroke' }}
               />
             )}
-
-
-            {/* Vector Plot Number Label: Crisp, High-Contrast, Visible on All Mobile Screens */}
-            <g
-              transform={`translate(${plot.center[0]}, ${plot.center[1]})`}
-              className="pointer-events-none select-none"
-            >
-              <circle
-                r="30"
-                fill={isSelected ? '#0284c7' : 'rgba(15, 23, 42, 0.78)'}
-                stroke={isSelected ? '#ffffff' : 'rgba(255, 255, 255, 0.45)'}
-                strokeWidth="2.5"
-                style={{
-                  vectorEffect: 'non-scaling-stroke',
-                  filter: 'drop-shadow(0 2px 5px rgba(0,0,0,0.6))',
-                  transition: 'fill 0.15s ease, stroke 0.15s ease',
-                }}
-              />
-              <text
-                x="0"
-                y="1"
-                textAnchor="middle"
-                dominantBaseline="central"
-                fill="#ffffff"
-                fontSize="26"
-                fontWeight="900"
-                fontFamily="system-ui, -apple-system, sans-serif"
-              >
-                {plot.number}
-              </text>
-            </g>
 
             {/* Crisp Hover Tooltip Callout when hovering */}
             {isHovered && !isSelected && (

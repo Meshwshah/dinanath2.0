@@ -48,11 +48,11 @@ export const QuickActionPills: React.FC<QuickActionPillsProps> = ({
       {/* Locate Pill */}
       <button
         onClick={handleLocateClick}
-        title="Open GPS Directions in Google Maps"
+        title="Open Location in Google Maps"
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold tracking-wide transition-all active:scale-95"
       >
         <IconCompass size={14} className="text-emerald-400" />
-        <span>Directions</span>
+        <span>Location</span>
       </button>
 
       {/* Share Pill */}

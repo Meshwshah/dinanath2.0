@@ -1,87 +1,92 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { IconX, IconChevronLeft, IconChevronRight } from '../common/Icons';
+import { GALLERY_PHOTOS, type GalleryPhoto } from '../../data/galleryPhotos';
 
 interface GalleryModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface GalleryItem {
-  id: string;
-  title: string;
-  category: string;
-  badge: string;
-  desc: string;
-  imageSrc?: string;
-  renderType?: 'warehouse' | 'gate' | 'roads' | 'ecopark' | 'connectivity';
-}
-
 export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) => {
-  const [activeIndex, setActiveIndex] = useState(0);
+  // Lightbox state: if selectedPhoto is non-null, the zoom lightbox is active
+  const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
-  const galleryItems: GalleryItem[] = [
-    {
-      id: 'masterplan',
-      title: 'Official Masterplan Layout Blueprint',
-      category: 'Master Layout',
-      badge: 'Official Blueprint',
-      desc: 'Complete 33,493 SMT industrial plotting layout with 69 industrial plots, 18.00m highway frontage, wide internal circulation roads, and two common utility plots.',
-      imageSrc: `${import.meta.env.BASE_URL}masterplan-layout.webp`,
-    },
-    {
-      id: 'warehouse',
-      title: 'Pre-Engineered Industrial Warehouse (PEB)',
-      category: 'Architecture & Engineering',
-      badge: 'Shed Concept',
-      desc: 'Standard modular PEB shed design featuring 9m clear height, heavy overhead crane gantries, insulated standing-seam roofing, and dedicated container loading docks.',
-      renderType: 'warehouse',
-    },
-    {
-      id: 'gate',
-      title: 'Grand Entrance Gateway & Security Axis',
-      category: 'Access & Logistics',
-      badge: '18m Road Access',
-      desc: 'Grand security gateway directly off 18.00m Naliya Road with 24/7 security cabin, automated boom barriers, and wide trailer turning radius.',
-      renderType: 'gate',
-    },
-    {
-      id: 'roads',
-      title: 'Heavy-Vehicle Road Network & Utilities',
-      category: 'Infrastructure',
-      badge: 'Concrete Roads',
-      desc: '17.50m cross-over and 12.00m internal circulation roads engineered with heavy RCC storm drains, full-spectrum LED street lighting, and underground utility conduits.',
-      renderType: 'roads',
-    },
-    {
-      id: 'ecopark',
-      title: 'Common Plot 01 Landscaped Green Zone',
-      category: 'Green Amenities',
-      badge: '1,965 SMT Park',
-      desc: 'Central landscaped open parkland equipped with rainwater harvesting percolation wells, indigenous shade tree plantations, and electrical substation enclaves.',
-      renderType: 'ecopark',
-    },
-    {
-      id: 'connectivity',
-      title: 'NH-48 Industrial Freight Corridor',
-      category: 'Strategic Location',
-      badge: 'Karjan / Vadodara',
-      desc: 'Strategically located at Manglej, Karjan with rapid highway access to the Golden Quadrilateral (NH-48), connecting Vadodara, Bharuch, and Dahej PCPIR industrial hubs.',
-      renderType: 'connectivity',
-    },
-  ];
+  // Zoom and pan state for the lightbox
+  const [zoomScale, setZoomScale] = useState(1);
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
+  // Reset zoom and pan whenever photo changes or closes
+  const resetZoom = useCallback(() => {
+    setZoomScale(1);
+    setPanOffset({ x: 0, y: 0 });
+  }, []);
+
+  const handleOpenPhoto = (index: number) => {
+    setSelectedPhotoIndex(index);
+    resetZoom();
+  };
+
+  const handleCloseLightbox = () => {
+    setSelectedPhotoIndex(null);
+    resetZoom();
+  };
+
+  const handlePrevPhoto = useCallback(() => {
+    if (selectedPhotoIndex === null) return;
+    const prev = selectedPhotoIndex === 0 ? GALLERY_PHOTOS.length - 1 : selectedPhotoIndex - 1;
+    setSelectedPhotoIndex(prev);
+    resetZoom();
+  }, [selectedPhotoIndex, resetZoom]);
+
+  const handleNextPhoto = useCallback(() => {
+    if (selectedPhotoIndex === null) return;
+    const next = selectedPhotoIndex === GALLERY_PHOTOS.length - 1 ? 0 : selectedPhotoIndex + 1;
+    setSelectedPhotoIndex(next);
+    resetZoom();
+  }, [selectedPhotoIndex, resetZoom]);
+
+  const handleZoomIn = () => {
+    setZoomScale(prev => Math.min(prev + 0.5, 4));
+  };
+
+  const handleZoomOut = () => {
+    setZoomScale(prev => {
+      const next = Math.max(prev - 0.5, 1);
+      if (next === 1) setPanOffset({ x: 0, y: 0 });
+      return next;
+    });
+  };
+
+  const handleToggleZoom = () => {
+    if (zoomScale > 1) {
+      resetZoom();
+    } else {
+      setZoomScale(2.5);
+    }
+  };
+
+  // Keyboard navigation
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (!isOpen) return;
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowLeft') {
-        setActiveIndex((prev) => (prev === 0 ? galleryItems.length - 1 : prev - 1));
+      if (e.key === 'Escape') {
+        if (selectedPhotoIndex !== null) {
+          handleCloseLightbox();
+        } else {
+          onClose();
+        }
       }
-      if (e.key === 'ArrowRight') {
-        setActiveIndex((prev) => (prev === galleryItems.length - 1 ? 0 : prev + 1));
+      if (selectedPhotoIndex !== null) {
+        if (e.key === 'ArrowLeft') handlePrevPhoto();
+        if (e.key === 'ArrowRight') handleNextPhoto();
+        if (e.key === '+' || e.key === '=') handleZoomIn();
+        if (e.key === '-') handleZoomOut();
+        if (e.key === '0') resetZoom();
       }
     },
-    [isOpen, onClose, galleryItems.length]
+    [isOpen, selectedPhotoIndex, onClose, handlePrevPhoto, handleNextPhoto, resetZoom]
   );
 
   useEffect(() => {
@@ -89,26 +94,78 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) =
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleKeyDown]);
 
+  // Pointer panning handlers for lightbox
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (zoomScale <= 1) return;
+    setIsPanning(true);
+    panStartRef.current = { x: e.clientX - panOffset.x, y: e.clientY - panOffset.y };
+    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isPanning || zoomScale <= 1) return;
+    setPanOffset({
+      x: e.clientX - panStartRef.current.x,
+      y: e.clientY - panStartRef.current.y,
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsPanning(false);
+    (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
+  };
+
+  // Wheel zoom handler
+  const handleWheel = (e: React.WheelEvent) => {
+    if (selectedPhotoIndex === null) return;
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      setZoomScale(prev => Math.min(prev + 0.25, 4));
+    } else {
+      setZoomScale(prev => {
+        const next = Math.max(prev - 0.25, 1);
+        if (next === 1) setPanOffset({ x: 0, y: 0 });
+        return next;
+      });
+    }
+  };
+
   if (!isOpen) return null;
 
-  const current = galleryItems[activeIndex];
+  const currentPhoto: GalleryPhoto | null =
+    selectedPhotoIndex !== null ? GALLERY_PHOTOS[selectedPhotoIndex] : null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
       onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
+        if (e.target === e.currentTarget) {
+          if (selectedPhotoIndex !== null) {
+            handleCloseLightbox();
+          } else {
+            onClose();
+          }
+        }
       }}
     >
-      <div className="relative w-full max-w-4xl rounded-3xl bg-[#141820] border border-white/15 p-4 sm:p-6 text-white shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in zoom-in-95 duration-200">
+      {/* ============================================================
+          MAIN MODAL CONTAINER (Single scrollable page for photos)
+          ============================================================ */}
+      <div className="relative w-full max-w-6xl rounded-3xl bg-[#141820] border border-white/15 text-white shadow-2xl flex flex-col h-[90vh] max-h-[92vh] overflow-hidden animate-in zoom-in-95 duration-200">
+        
         {/* Header Bar */}
-        <div className="flex items-center justify-between pb-3 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-white/10 flex-shrink-0 bg-slate-950/60">
           <div className="flex items-center gap-3">
-            <span className="px-2.5 py-1 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-bold tracking-wide uppercase">
-              {current.badge}
-            </span>
-            <span className="text-xs text-slate-400 font-medium">
-              {activeIndex + 1} of {galleryItems.length}
+            <h2 className="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2">
+              <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                <circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <span>Project Photos & Blueprint</span>
+            </h2>
+            <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-400 text-xs font-mono font-semibold">
+              {GALLERY_PHOTOS.length} Photos
             </span>
           </div>
 
@@ -121,195 +178,195 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) =
           </button>
         </div>
 
-        {/* Main Image / Render Display Area */}
-        <div className="relative flex-1 min-h-[260px] sm:min-h-[380px] my-3 rounded-2xl bg-slate-950 border border-white/10 overflow-hidden flex items-center justify-center">
-          {/* Real Masterplan Blueprint */}
-          {current.imageSrc ? (
-            <div className="relative w-full h-full flex items-center justify-center bg-[#1F1F1F] p-2">
-              <img
-                src={current.imageSrc}
-                alt={current.title}
-                className="max-w-full max-h-full object-contain rounded-lg select-none"
-              />
-              <a
-                href={current.imageSrc}
-                target="_blank"
-                rel="noreferrer"
-                className="absolute bottom-3 right-3 px-3 py-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 text-cyan-300 border border-cyan-500/30 text-xs font-semibold backdrop-blur-md transition-all shadow-lg flex items-center gap-1.5"
+        {/* Scrollable Photos Page */}
+        <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 custom-scrollbar">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {GALLERY_PHOTOS.map((photo, index) => (
+              <div
+                key={photo.id}
+                onClick={() => handleOpenPhoto(index)}
+                className="group relative rounded-2xl overflow-hidden bg-slate-900 border border-white/10 hover:border-cyan-500/50 shadow-lg cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-cyan-500/10 flex flex-col"
               >
-                <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
-                </svg>
-                <span>Full Blueprint</span>
-              </a>
-            </div>
-          ) : current.renderType === 'warehouse' ? (
-            /* PEB Warehouse Concept Visual */
-            <div className="w-full h-full bg-gradient-to-br from-slate-900 via-amber-950/20 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
-              <svg className="w-full max-w-md h-48 sm:h-56" viewBox="0 0 400 220" fill="none">
-                <line x1="20" y1="180" x2="380" y2="180" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 4" opacity="0.6" />
-                <polygon points="60,180 60,90 200,45 340,90 340,180" fill="#f59e0b10" stroke="#f59e0b" strokeWidth="2.5" />
-                <line x1="60" y1="90" x2="340" y2="90" stroke="#f59e0b88" strokeWidth="1.5" />
-                <line x1="200" y1="45" x2="200" y2="180" stroke="#f59e0b66" strokeWidth="1.5" />
-                <line x1="130" y1="67" x2="130" y2="180" stroke="#f59e0b44" strokeWidth="1" />
-                <line x1="270" y1="67" x2="270" y2="180" stroke="#f59e0b44" strokeWidth="1" />
-                <rect x="80" y="105" width="240" height="8" rx="2" fill="#38bdf8" opacity="0.8" />
-                <rect x="180" y="113" width="40" height="20" rx="3" fill="#38bdf8" />
-                <line x1="200" y1="133" x2="200" y2="155" stroke="#38bdf8" strokeWidth="2" />
-                <rect x="90" y="130" width="35" height="50" fill="#f59e0b25" stroke="#f59e0b" strokeWidth="1.5" />
-                <rect x="140" y="130" width="35" height="50" fill="#f59e0b25" stroke="#f59e0b" strokeWidth="1.5" />
-                <rect x="255" y="135" width="70" height="45" rx="3" fill="#ffffff15" stroke="#ffffff" strokeWidth="1.5" />
-                <circle cx="275" cy="180" r="7" fill="#f59e0b" />
-                <circle cx="310" cy="180" r="7" fill="#f59e0b" />
-                <text x="200" y="32" fill="#f59e0b" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
-                  MODULAR PEB SHED (9M CLEAR HEIGHT)
-                </text>
-                <text x="200" y="100" fill="#38bdf8" fontSize="10" fontFamily="monospace" textAnchor="middle">
-                  HEAVY CRANE GANTRY READY
-                </text>
-              </svg>
-            </div>
-          ) : current.renderType === 'gate' ? (
-            /* Grand Entrance Gate Visual */
-            <div className="w-full h-full bg-gradient-to-br from-slate-900 via-emerald-950/20 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
-              <svg className="w-full max-w-md h-48 sm:h-56" viewBox="0 0 400 220" fill="none">
-                <polygon points="80,195 320,195 240,110 160,110" fill="#10b98115" stroke="#10b981" strokeWidth="1.5" />
-                <line x1="200" y1="195" x2="200" y2="110" stroke="#10b981" strokeWidth="1.5" strokeDasharray="6 4" />
-                <rect x="120" y="60" width="24" height="100" rx="2" fill="#10b98125" stroke="#10b981" strokeWidth="2" />
-                <rect x="256" y="60" width="24" height="100" rx="2" fill="#10b98125" stroke="#10b981" strokeWidth="2" />
-                <rect x="110" y="45" width="180" height="18" rx="3" fill="#10b981" />
-                <text x="200" y="58" fill="#022c22" fontSize="9" fontWeight="900" fontFamily="monospace" textAnchor="middle">
-                  DINANATH INDUSTRIAL PARK
-                </text>
-                <rect x="290" y="100" width="45" height="40" rx="3" fill="#ffffff15" stroke="#10b981" strokeWidth="1.5" />
-                <circle cx="312" cy="90" r="3" fill="#10b981" />
-                <line x1="144" y1="135" x2="200" y2="135" stroke="#ef4444" strokeWidth="3" strokeDasharray="6 3" />
-                <line x1="200" y1="135" x2="256" y2="135" stroke="#ef4444" strokeWidth="3" strokeDasharray="6 3" />
-                <text x="200" y="210" fill="#10b981" fontSize="11" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
-                  18.00 MT. WIDE EXIST. NALIYA ROAD
-                </text>
-              </svg>
-            </div>
-          ) : current.renderType === 'roads' ? (
-            /* Concrete Road Network Visual */
-            <div className="w-full h-full bg-gradient-to-br from-slate-900 via-cyan-950/20 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
-              <svg className="w-full max-w-md h-48 sm:h-56" viewBox="0 0 400 220" fill="none">
-                <rect x="40" y="90" width="320" height="45" rx="4" fill="#06b6d415" stroke="#06b6d4" strokeWidth="2" />
-                <line x1="40" y1="112" x2="360" y2="112" stroke="#06b6d4" strokeWidth="2" strokeDasharray="8 6" />
-                <rect x="25" y="90" width="15" height="45" rx="2" fill="#06b6d430" stroke="#06b6d4" strokeWidth="1.5" />
-                <rect x="360" y="90" width="15" height="45" rx="2" fill="#06b6d430" stroke="#06b6d4" strokeWidth="1.5" />
-                <line x1="70" y1="90" x2="70" y2="35" stroke="#38bdf8" strokeWidth="2" />
-                <line x1="70" y1="35" x2="85" y2="35" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="85" cy="38" r="4" fill="#fbbf24" />
-                <line x1="330" y1="90" x2="330" y2="35" stroke="#38bdf8" strokeWidth="2" />
-                <line x1="330" y1="35" x2="315" y2="35" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="315" cy="38" r="4" fill="#fbbf24" />
-                <line x1="20" y1="165" x2="380" y2="165" stroke="#38bdf8" strokeWidth="2" strokeDasharray="5 3" />
-                <text x="200" y="160" fill="#38bdf8" fontSize="10" fontFamily="monospace" textAnchor="middle">
-                  UNDERGROUND POWER & FIBER CONDUITS
-                </text>
-                <text x="200" y="195" fill="#06b6d4" fontSize="12" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
-                  17.50M / 12.00M HEAVY-DUTY CONCRETE CORRIDOR
-                </text>
-              </svg>
-            </div>
-          ) : current.renderType === 'ecopark' ? (
-            /* Eco Park Visual */
-            <div className="w-full h-full bg-gradient-to-br from-slate-900 via-emerald-950/20 to-lime-950/20 flex flex-col items-center justify-center p-6 text-center">
-              <svg className="w-full max-w-md h-48 sm:h-56" viewBox="0 0 400 220" fill="none">
-                <rect x="60" y="40" width="280" height="135" rx="16" fill="#10b98115" stroke="#10b981" strokeWidth="2" />
-                <circle cx="140" cy="105" r="28" fill="#38bdf820" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="140" cy="105" r="14" fill="#38bdf840" />
-                <text x="140" y="148" fill="#38bdf8" fontSize="9" fontFamily="monospace" textAnchor="middle">
-                  RECHARGE WELL
-                </text>
-                <circle cx="230" cy="85" r="18" fill="#10b98140" stroke="#10b981" strokeWidth="1.5" />
-                <circle cx="270" cy="115" r="16" fill="#10b98140" stroke="#10b981" strokeWidth="1.5" />
-                <circle cx="245" cy="130" r="14" fill="#10b98140" stroke="#10b981" strokeWidth="1.5" />
-                <rect x="80" y="55" width="30" height="24" rx="3" fill="#f59e0b20" stroke="#f59e0b" strokeWidth="1.5" />
-                <text x="95" y="70" fill="#f59e0b" fontSize="8" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
-                  SUB
-                </text>
-                <text x="200" y="195" fill="#34d399" fontSize="11" fontWeight="bold" fontFamily="monospace" textAnchor="middle">
-                  COMMON PLOT 01 • 1,965.79 SMT ECO-PARK
-                </text>
-              </svg>
-            </div>
-          ) : (
-            /* Regional Connectivity Map Visual */
-            <div className="w-full h-full bg-gradient-to-br from-slate-900 via-indigo-950/20 to-slate-950 flex flex-col items-center justify-center p-6 text-center">
-              <svg className="w-full max-w-md h-48 sm:h-56" viewBox="0 0 400 220" fill="none">
-                <line x1="60" y1="30" x2="340" y2="190" stroke="#818cf8" strokeWidth="4" />
-                <line x1="60" y1="30" x2="340" y2="190" stroke="#ffffff" strokeWidth="1" strokeDasharray="6 4" />
-                <circle cx="95" cy="50" r="8" fill="#818cf8" />
-                <text x="110" y="55" fill="#ffffff" fontSize="11" fontWeight="bold">
-                  Vadodara (24 km)
-                </text>
-                <circle cx="200" cy="110" r="14" fill="#06b6d4" stroke="#ffffff" strokeWidth="2.5" />
-                <circle cx="200" cy="110" r="5" fill="#ffffff" />
-                <text x="200" y="138" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">
-                  DINANATH PARK (Manglej, Karjan)
-                </text>
-                <circle cx="305" cy="170" r="8" fill="#818cf8" />
-                <text x="295" y="190" fill="#ffffff" fontSize="11" fontWeight="bold" textAnchor="end">
-                  Bharuch / Dahej (42 km)
-                </text>
-                <text x="200" y="25" fill="#818cf8" fontSize="10" fontFamily="monospace" fontWeight="bold" textAnchor="middle">
-                  GOLDEN QUADRILATERAL (NH-48) INDUSTRIAL AXIS
-                </text>
-              </svg>
-            </div>
-          )}
+                {/* Photo Aspect Ratio Box */}
+                <div className="relative w-full aspect-[4/3] bg-slate-950 overflow-hidden flex items-center justify-center">
+                  <img
+                    src={photo.url}
+                    alt={photo.alt || photo.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 select-none"
+                  />
 
-          {/* Left / Right Nav Arrows */}
-          <button
-            onClick={() => setActiveIndex((prev) => (prev === 0 ? galleryItems.length - 1 : prev - 1))}
-            className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white border border-white/15 backdrop-blur-md transition-all active:scale-90 shadow-xl"
-            title="Previous (Left Arrow)"
-          >
-            <IconChevronLeft size={18} />
-          </button>
-          <button
-            onClick={() => setActiveIndex((prev) => (prev === galleryItems.length - 1 ? 0 : prev + 1))}
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-slate-900/80 hover:bg-slate-800 text-white border border-white/15 backdrop-blur-md transition-all active:scale-90 shadow-xl"
-            title="Next (Right Arrow)"
-          >
-            <IconChevronRight size={18} />
-          </button>
+                  {/* Dark gradient on bottom */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-80 group-hover:opacity-90 transition-opacity" />
+
+                  {/* Hover Click to Zoom Badge */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-[2px]">
+                    <span className="px-3 py-1.5 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs shadow-lg flex items-center gap-1.5 scale-90 group-hover:scale-100 transition-transform">
+                      <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                        <line x1="11" y1="8" x2="11" y2="14" />
+                        <line x1="8" y1="11" x2="14" y2="11" />
+                      </svg>
+                      <span>Click to Zoom</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Photo Caption / Title */}
+                <div className="p-3 bg-[#191e28] flex items-center justify-between gap-2 border-t border-white/5">
+                  <h3 className="text-xs sm:text-sm font-semibold text-slate-200 truncate" title={photo.title}>
+                    {photo.title}
+                  </h3>
+                  <span className="text-[10px] text-cyan-400 font-mono shrink-0">
+                    #{index + 1}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {/* Caption & Description */}
-        <div className="flex-shrink-0 px-1 py-1">
-          <h3 className="text-base sm:text-lg font-bold text-white mb-1">
-            {current.title}
-          </h3>
-          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-            {current.desc}
-          </p>
-        </div>
-
-        {/* Thumbnail Selector Strip */}
-        <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 custom-scrollbar flex-shrink-0">
-          {galleryItems.map((item, idx) => (
-            <button
-              key={item.id}
-              onClick={() => setActiveIndex(idx)}
-              className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-semibold border transition-all text-left ${
-                idx === activeIndex
-                  ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 shadow-sm'
-                  : 'bg-white/5 border-white/10 text-slate-400 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <div className="truncate max-w-[120px] sm:max-w-[140px] font-bold">
-                {item.title}
-              </div>
-              <div className="text-[10px] text-slate-400 font-normal">
-                {item.category}
-              </div>
-            </button>
-          ))}
+        {/* Modal Footer Note for Admin */}
+        <div className="px-4 py-2 sm:px-6 sm:py-2.5 border-t border-white/10 bg-slate-950/80 flex items-center justify-between text-[11px] text-slate-400">
+          <span>Click any photo to open full-screen zoom view</span>
+          <span className="font-mono text-slate-500 hidden sm:inline">Use mouse wheel or + / - to zoom</span>
         </div>
       </div>
+
+      {/* ============================================================
+          FULL-SCREEN ZOOM LIGHTBOX (When user clicks any photo)
+          ============================================================ */}
+      {currentPhoto && (
+        <div
+          className="fixed inset-0 z-60 bg-black/95 flex flex-col items-center justify-between animate-in fade-in duration-150 select-none"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) handleCloseLightbox();
+          }}
+          onWheel={handleWheel}
+        >
+          {/* Lightbox Top Control Bar */}
+          <div className="w-full px-4 py-3 sm:px-6 flex items-center justify-between border-b border-white/10 bg-black/60 backdrop-blur-md z-20">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <button
+                onClick={handleCloseLightbox}
+                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold text-white flex items-center gap-1.5 transition-all"
+              >
+                <IconX size={14} />
+                <span>Back to Photos</span>
+              </button>
+              <h3 className="text-xs sm:text-sm font-bold text-white truncate max-w-[200px] sm:max-w-md">
+                {currentPhoto.title}
+              </h3>
+              <span className="text-xs text-slate-400 font-mono hidden sm:inline">
+                ({selectedPhotoIndex! + 1} / {GALLERY_PHOTOS.length})
+              </span>
+            </div>
+
+            {/* Zoom Controls */}
+            <div className="flex items-center gap-1 sm:gap-2">
+              <button
+                onClick={handleZoomOut}
+                disabled={zoomScale <= 1}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white transition-all"
+                title="Zoom Out (-)"
+              >
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </button>
+
+              <span className="font-mono text-xs font-bold text-cyan-400 px-2 min-w-[50px] text-center">
+                {Math.round(zoomScale * 100)}%
+              </span>
+
+              <button
+                onClick={handleZoomIn}
+                disabled={zoomScale >= 4}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 disabled:opacity-30 text-white transition-all"
+                title="Zoom In (+)"
+              >
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </button>
+
+              <button
+                onClick={resetZoom}
+                className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-mono font-semibold text-slate-200 transition-all hidden sm:inline"
+                title="Reset Zoom (0)"
+              >
+                Reset
+              </button>
+
+              <a
+                href={currentPhoto.url}
+                target="_blank"
+                rel="noreferrer"
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-cyan-300 transition-all"
+                title="Open original resolution in new tab"
+              >
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          {/* Lightbox Center Image Stage (Supports Zoom, Pan & Double Click) */}
+          <div
+            className="relative w-full flex-1 flex items-center justify-center overflow-hidden cursor-grab active:cursor-grabbing p-4"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onDoubleClick={handleToggleZoom}
+          >
+            <img
+              src={currentPhoto.url}
+              alt={currentPhoto.title}
+              style={{
+                transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomScale})`,
+                transition: isPanning ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)',
+              }}
+              className="max-w-[90vw] max-h-[80vh] object-contain rounded-xl shadow-2xl select-none pointer-events-none"
+              draggable={false}
+            />
+
+            {/* Previous Photo Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handlePrevPhoto();
+              }}
+              className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 backdrop-blur-md transition-all active:scale-90 shadow-2xl z-10"
+              title="Previous Photo (Left Arrow)"
+            >
+              <IconChevronLeft size={22} />
+            </button>
+
+            {/* Next Photo Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                handleNextPhoto();
+              }}
+              className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/60 hover:bg-black/90 text-white border border-white/20 backdrop-blur-md transition-all active:scale-90 shadow-2xl z-10"
+              title="Next Photo (Right Arrow)"
+            >
+              <IconChevronRight size={22} />
+            </button>
+          </div>
+
+          {/* Lightbox Bottom Info Bar */}
+          <div className="w-full px-4 py-2.5 sm:px-6 flex items-center justify-between border-t border-white/10 bg-black/60 backdrop-blur-md text-xs text-slate-400 z-20">
+            <span className="truncate">{currentPhoto.title}</span>
+            <span className="hidden sm:inline font-mono">
+              Double-click to toggle 2.5x zoom • Drag to pan
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -146,27 +146,12 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
               <span className="font-mono font-semibold text-slate-200">{plot.dimensions.label}</span>
             </div>
 
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+            <div className="flex items-center justify-between">
               <span className="text-slate-400">Road Frontage</span>
               <span className="font-semibold text-right text-slate-200 max-w-[200px] truncate text-xs" title={plot.roadFrontage}>
                 {plot.roadFrontage}
               </span>
             </div>
-
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
-              <span className="text-slate-400">Permitted Use</span>
-              <span className="font-semibold text-slate-200">Industrial & Engineering</span>
-            </div>
-
-            {plot.price && (
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-slate-400">Rate / Valuation</span>
-                <div className="text-right">
-                  <div className="font-bold text-emerald-400 font-mono">{plot.price.totalEstimate}</div>
-                  <div className="text-[11px] text-slate-400 font-mono">{plot.price.ratePerSft}</div>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Plot Features Tags */}

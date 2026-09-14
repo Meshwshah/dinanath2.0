@@ -36,6 +36,7 @@ export function App() {
   const [isContactOpen, setIsContactOpen] = useState(false);
   const [isMapViewOpen, setIsMapViewOpen] = useState(false);
   const [inquiryPlot, setInquiryPlot] = useState<PlotData | null>(null);
+  const [highlightedPlotIds, setHighlightedPlotIds] = useState<string[]>([]);
 
   // Toast notifications
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -71,6 +72,7 @@ export function App() {
 
   // Plot selection handler
   const handleSelectPlot = useCallback((plot: PlotData) => {
+    setHighlightedPlotIds([]);
     if (selectedPlot?.id === plot.id && isDrawerOpen) {
       // If clicking the currently selected plot while drawer is already open, toggle closed
       setSelectedPlot(null);
@@ -87,6 +89,7 @@ export function App() {
   // Deselect / Reset handler
   const handleReset = useCallback(() => {
     setSelectedPlot(null);
+    setHighlightedPlotIds([]);
     setIsDrawerOpen(false);
     resetCamera();
     window.history.replaceState({}, '', window.location.pathname);
@@ -188,7 +191,8 @@ export function App() {
     };
     const center: [number, number] = [minX + bbox.width / 2, minY + bbox.height / 2];
     zoomToArea(bbox, center);
-    addToast(`Zoomed to ${matchedPlots.length} plots (${min.toLocaleString()} – ${max.toLocaleString()} sq.ft)`, 'info');
+    setHighlightedPlotIds(matchedPlots.map(p => p.id));
+    addToast(`Zoomed & highlighted ${matchedPlots.length} plots (${min.toLocaleString()} – ${max.toLocaleString()} sq.ft)`, 'info');
   }, [zoomToArea, addToast]);
 
   // Keyboard navigation shortcuts
@@ -247,6 +251,7 @@ export function App() {
           viewMode={viewMode}
           selectedPlot={selectedPlot}
           hoveredPlotId={hoveredPlotId}
+          highlightedPlotIds={highlightedPlotIds}
           showCategories={showCategories}
           showStatus={showStatus}
           onPlotClick={handleSelectPlot}

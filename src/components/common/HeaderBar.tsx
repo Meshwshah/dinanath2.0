@@ -46,51 +46,51 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
         </div>
       </div>
 
-      {/* Top-Right Action Buttons: Compact on mobile, full on desktop */}
+      {/* Top-Right Action Buttons: Always show symbol + label */}
       <div className="pointer-events-auto flex items-center gap-1 sm:gap-2 shrink-0">
         {/* 1. Gallery Button */}
         <button
           onClick={onOpenGallery}
-          className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#222222]/90 hover:bg-[#2e2e2e] text-white border border-white/10 text-xs sm:text-sm font-medium backdrop-blur-md shadow-lg transition-all active:scale-95 flex items-center gap-1.5"
+          className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-[#222222]/90 hover:bg-[#2e2e2e] text-white border border-white/10 text-[11px] sm:text-xs md:text-sm font-medium backdrop-blur-md shadow-lg transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5"
           title="Gallery"
         >
-          <IconGallery size={16} className="text-slate-300" />
-          <span className="hidden sm:inline">Gallery</span>
+          <IconGallery size={13} className="text-slate-300 sm:w-4 sm:h-4 shrink-0" />
+          <span>Gallery</span>
         </button>
 
         {/* 2. Info Button */}
         <button
           onClick={onOpenInfo}
-          className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#222222]/90 hover:bg-[#2e2e2e] text-white border border-white/10 text-xs sm:text-sm font-medium backdrop-blur-md shadow-lg transition-all active:scale-95 flex items-center gap-1.5"
+          className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-[#222222]/90 hover:bg-[#2e2e2e] text-white border border-white/10 text-[11px] sm:text-xs md:text-sm font-medium backdrop-blur-md shadow-lg transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5"
           title="Project Info"
         >
-          <IconInfo size={16} className="text-slate-300" />
-          <span className="hidden sm:inline">Info</span>
+          <IconInfo size={13} className="text-slate-300 sm:w-4 sm:h-4 shrink-0" />
+          <span>Info</span>
         </button>
 
         {/* 3. Contact Button */}
         <button
           onClick={onOpenContact}
-          className="p-2 sm:px-3 sm:py-2 rounded-xl bg-[#222222]/90 hover:bg-[#2e2e2e] text-white border border-white/10 text-xs sm:text-sm font-medium backdrop-blur-md shadow-lg transition-all active:scale-95 flex items-center gap-1.5"
+          className="px-2 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-[#222222]/90 hover:bg-[#2e2e2e] text-white border border-white/10 text-[11px] sm:text-xs md:text-sm font-medium backdrop-blur-md shadow-lg transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5"
           title="Contact Developer"
         >
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300">
+          <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-300 sm:w-4 sm:h-4 shrink-0">
             <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
           </svg>
-          <span className="hidden sm:inline">Contact</span>
+          <span>Contact</span>
         </button>
 
-        {/* 4. Directions Button */}
+        {/* 4. Location Button */}
         <button
           onClick={handleDirections}
-          className="p-2 sm:px-3.5 sm:py-2 rounded-xl bg-[#0070f3] hover:bg-[#0060df] text-white text-xs sm:text-sm font-semibold shadow-lg shadow-blue-500/25 transition-all active:scale-95 flex items-center gap-1.5"
-          title="Directions"
+          className="px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-[#0070f3] hover:bg-[#0060df] text-white text-[11px] sm:text-xs md:text-sm font-semibold shadow-lg shadow-blue-500/25 transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5"
+          title="Location"
         >
-          <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4 shrink-0">
             <line x1="22" y1="2" x2="11" y2="13" />
             <polygon points="22 2 15 22 11 13 2 9 22 2" />
           </svg>
-          <span className="hidden sm:inline">Directions</span>
+          <span>Location</span>
         </button>
       </div>
     </header>
