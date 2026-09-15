@@ -325,9 +325,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 <p className="text-xs text-slate-400 mt-1">
                   Enter master PIN to manage plots & gallery
                 </p>
-                <div className="mt-2 inline-block px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-[11px] font-mono text-cyan-300">
-                  Default PIN: <strong className="text-white">2026</strong>
-                </div>
               </div>
 
               <form onSubmit={handleLogin} className="space-y-4">
