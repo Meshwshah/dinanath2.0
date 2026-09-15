@@ -1,6 +1,6 @@
 import React from 'react';
 import type { PlotData, ViewMode, CategoryFilter } from '../../types/masterplan';
-import { PLOTS_DATA, COMMON_PLOTS, pointsToPath } from '../../data/plotsData';
+import { PLOTS_DATA, COMMON_PLOTS, CANVAS_BOUNDS, pointsToPath } from '../../data/plotsData';
 
 interface SvgInteractivePlotsProps {
   selectedPlotId: string | null;
@@ -247,6 +247,225 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
           </g>
         );
       })}
+
+      {/* ============================================================
+          3. OUTSIDE LAYOUT CRISP VECTOR ANNOTATIONS & ROAD LABELS
+          Permanent, razor-sharp, perfectly visible at all zoom levels
+          ============================================================ */}
+      <g id="map-layer-outside-annotations" className="pointer-events-none select-none">
+        {/* South: 18.00 MT. WIDE EXIST. NALIYA ROAD */}
+        <g>
+          <line x1="80" y1="5280" x2="3140" y2="5280" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" />
+          <line x1="80" y1="5180" x2="3140" y2="5180" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeDasharray="16 12" />
+          <text
+            x={CANVAS_BOUNDS.width / 2}
+            y={5180}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#f8fafc"
+            stroke="#09090b"
+            strokeWidth="4"
+            paintOrder="stroke fill"
+            fontSize="30"
+            fontWeight="900"
+            letterSpacing="5"
+          >
+            18.00 MT. WIDE EXIST. NALIYA ROAD
+          </text>
+        </g>
+
+        {/* Setback Area annotation under Plots 1 to 6 */}
+        <g>
+          <text
+            x={550}
+            y={4965}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#f8fafc"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="18"
+            fontWeight="800"
+            letterSpacing="1.5"
+          >
+            NALIYA SETBACK AREA : 592.25 SMT.
+          </text>
+        </g>
+
+        {/* South Boundary Dimensions */}
+        <g>
+          <text x={85} y={5060} dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">45.49</text>
+          <text x={2280} y={5070} textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">18.05</text>
+          <text x={2530} y={5070} textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">18.05</text>
+          <text x={2820} y={5070} textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">21.21</text>
+          <text x={3045} y={4950} textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">54.51</text>
+        </g>
+
+        {/* East (Right Margin): Tree Plantation, Building Control, and Zone Dimensions */}
+        <g transform="translate(3140, 3680) rotate(90)">
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#4ade80"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="22"
+            fontWeight="800"
+            letterSpacing="3"
+          >
+            1.22 MT. WIDE FOR TREE PLANTATION
+          </text>
+        </g>
+        <g transform="translate(3085, 4250) rotate(90)">
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#cbd5e1"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="20"
+            fontWeight="800"
+            letterSpacing="2.5"
+          >
+            BUILDING CONTROL LINE
+          </text>
+        </g>
+        <g transform="translate(2955, 1450) rotate(90)">
+          <text textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="18" fontWeight="700">183.98</text>
+        </g>
+        <g transform="translate(3030, 3550) rotate(90)">
+          <text textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="18" fontWeight="700">139.98</text>
+        </g>
+
+        {/* West (Left Margin): Tree Plantation, Building Control, and Boundary Dimensions */}
+        <g transform="translate(65, 4070) rotate(-90)">
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#cbd5e1"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="20"
+            fontWeight="800"
+            letterSpacing="2.5"
+          >
+            BUILDING CONTROL LINE
+          </text>
+        </g>
+        <g transform="translate(35, 4950) rotate(-90)">
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#4ade80"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="20"
+            fontWeight="800"
+            letterSpacing="2"
+          >
+            1.22 MT. WIDE TREE PLANTATION
+          </text>
+        </g>
+        <g>
+          <text x={60} y={450} dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">55.04</text>
+          <text x={90} y={930} dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">31.89 / 21.78</text>
+          <text x={715} y={2000} transform="rotate(-90, 715, 2000)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">28.16</text>
+          <text x={745} y={2520} transform="rotate(-90, 745, 2520)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">81.69</text>
+          <text x={420} y={3450} textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">50.69</text>
+          <text x={50} y={3280} textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">22.52</text>
+          <text x={45} y={4200} transform="rotate(-90, 45, 4200)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">46.03</text>
+          <text x={45} y={4550} transform="rotate(-90, 45, 4550)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">118.43</text>
+        </g>
+
+        {/* North: 12.00 MT Wide Road Frontage & Boundary Dimensions */}
+        <g>
+          <text
+            x={1500}
+            y={28}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#f8fafc"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="20"
+            fontWeight="800"
+            letterSpacing="2"
+          >
+            12.00 MT. WIDE ROAD
+          </text>
+          <text
+            x={2350}
+            y={28}
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#f8fafc"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="20"
+            fontWeight="800"
+            letterSpacing="2"
+          >
+            12.00 MT. WIDE ROAD
+          </text>
+          <text x={1185} y={32} textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">16.37</text>
+          <text x={1700} y={32} textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">49.30</text>
+          <text x={2550} y={32} textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">63.39</text>
+        </g>
+
+        {/* Central Spine Road Labels */}
+        <g transform="translate(1965, 1500) rotate(90)">
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#f8fafc"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="22"
+            fontWeight="800"
+            letterSpacing="4"
+          >
+            17.50 MT. WIDE CROSS-OVER ROAD
+          </text>
+        </g>
+        <g transform="translate(1965, 3000) rotate(90)">
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#f8fafc"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="22"
+            fontWeight="800"
+            letterSpacing="4"
+          >
+            17.50 MT. WIDE CROSS-OVER ROAD
+          </text>
+        </g>
+        <g transform="translate(1965, 4400) rotate(90)">
+          <text
+            textAnchor="middle"
+            dominantBaseline="central"
+            fill="#f8fafc"
+            stroke="#09090b"
+            strokeWidth="3.5"
+            paintOrder="stroke fill"
+            fontSize="22"
+            fontWeight="800"
+            letterSpacing="4"
+          >
+            17.50 MT. WIDE CROSS-OVER ROAD
+          </text>
+        </g>
+      </g>
     </g>
   );
 };
