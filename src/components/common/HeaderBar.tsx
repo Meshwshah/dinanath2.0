@@ -7,6 +7,7 @@ interface HeaderBarProps {
   onOpenGallery: () => void;
   onOpenInfo: () => void;
   onOpenContact: () => void;
+  onOpenAdmin?: () => void;
   activeCategory?: CategoryFilter;
   onSelectCategory?: (cat: CategoryFilter) => void;
 }
@@ -15,6 +16,7 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
   onOpenGallery,
   onOpenInfo,
   onOpenContact,
+  onOpenAdmin,
   activeCategory = null,
   onSelectCategory,
 }) => {
@@ -156,6 +158,18 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
           </svg>
           <span>Location</span>
         </button>
+
+        {/* 5. Admin Portal Button */}
+        {onOpenAdmin && (
+          <button
+            onClick={onOpenAdmin}
+            className="px-1.5 py-1.5 sm:px-2.5 sm:py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-[10px] sm:text-xs md:text-sm font-semibold backdrop-blur-md shadow-lg transition-all active:scale-95 flex items-center gap-1 sm:gap-1.5 shrink-0"
+            title="Admin Portal"
+          >
+            <span className="text-xs sm:text-sm">⚡</span>
+            <span className="hidden xs:inline">Admin</span>
+          </button>
+        )}
       </div>
     </header>
   );

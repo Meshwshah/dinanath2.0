@@ -6,6 +6,7 @@ import { SvgInteractivePlots } from './SvgInteractivePlots';
 import { SvgHighlightStroke } from './SvgHighlightStroke';
 
 interface MasterplanViewerProps {
+  plots?: PlotData[];
   containerRef: React.RefObject<HTMLDivElement | null>;
   camera: CameraState;
   isDragging: boolean;
@@ -27,6 +28,7 @@ interface MasterplanViewerProps {
 }
 
 export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
+  plots,
   containerRef,
   camera,
   isDragging,
@@ -101,6 +103,7 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
 
           {/* Layer 2 & 3: Masterplan Vector Interactive Plots, Dark Bold Labels & Outside Annotations */}
           <SvgInteractivePlots
+            plots={plots}
             selectedPlotId={selectedPlot?.id ?? null}
             hoveredPlotId={hoveredPlotId}
             highlightedPlotIds={highlightedPlotIds}

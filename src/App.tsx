@@ -14,10 +14,16 @@ import { InquiryModal } from './components/modals/InquiryModal';
 import { ContactModal } from './components/modals/ContactModal';
 import { LeafletSatelliteViewer } from './components/map/LeafletSatelliteViewer';
 import { ToastContainer } from './components/common/Toast';
+import { AdminModal } from './components/admin/AdminModal';
+import { adminStore } from './services/adminStore';
 
 export function App() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Dynamic Plots state managed via Admin Store
+  const [plots, setPlots] = useState<PlotData[]>(() => adminStore.getPlots());
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
 
   // Masterplan selection and view state
   const [selectedPlot, setSelectedPlot] = useState<PlotData | null>(null);
@@ -53,6 +59,41 @@ export function App() {
 
   const dismissToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  // Sync dynamic plots with admin store
+  useEffect(() => {
+    const unsub = adminStore.subscribe(() => {
+      setPlots(adminStore.getPlots());
+    });
+    return unsub;
+  }, []);
+
+  // Check URL hash (#admin or ?admin=1) or Ctrl+Shift+A keyboard shortcut
+  useEffect(() => {
+    const checkAdmin = () => {
+      if (
+        window.location.hash === '#admin' ||
+        new URLSearchParams(window.location.search).get('admin') === '1'
+      ) {
+        setIsAdminOpen(true);
+      }
+    };
+    checkAdmin();
+    window.addEventListener('hashchange', checkAdmin);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        setIsAdminOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('hashchange', checkAdmin);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Viewport camera hook with panel offset calculations & gestures
@@ -259,6 +300,7 @@ export function App() {
         onOpenGallery={() => setIsGalleryOpen(true)}
         onOpenInfo={() => setIsInfoOpen(true)}
         onOpenContact={() => setIsContactOpen(true)}
+        onOpenAdmin={() => setIsAdminOpen(true)}
         activeCategory={activeCategory}
         onSelectCategory={handleSelectCategory}
       />
@@ -266,6 +308,7 @@ export function App() {
       {/* Main Interactive SVG Masterplan Stage */}
       <main className="w-full h-full">
         <MasterplanViewer
+          plots={plots}
           containerRef={containerRef}
           camera={camera}
           isDragging={isDragging}
@@ -300,6 +343,7 @@ export function App() {
 
       {/* Floating HUD Dock (Bottom-Right) matching user reference */}
       <FloatingHudDock
+        plots={plots}
         showCategories={showCategories}
         activeCategory={activeCategory}
         onSelectCategory={handleSelectCategory}
@@ -358,6 +402,18 @@ export function App() {
         }}
         onOpenContact={() => setIsContactOpen(true)}
         onOpenGallery={() => setIsGalleryOpen(true)}
+      />
+
+      {/* Admin Portal Modal */}
+      <AdminModal
+        isOpen={isAdminOpen}
+        onClose={() => {
+          setIsAdminOpen(false);
+          if (window.location.hash === '#admin') {
+            window.history.replaceState({}, '', window.location.pathname + window.location.search);
+          }
+        }}
+        onPlotsUpdated={() => setPlots(adminStore.getPlots())}
       />
 
       {/* Notification Toasts */}

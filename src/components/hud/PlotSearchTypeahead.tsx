@@ -4,6 +4,7 @@ import { PLOTS_DATA } from '../../data/plotsData';
 import { IconSearch, IconX } from '../common/Icons';
 
 interface PlotSearchTypeaheadProps {
+  plots?: PlotData[];
   onSelectPlot: (plot: PlotData) => void;
   onSelectRange?: (minSft: number, maxSft: number, plots: PlotData[]) => void;
   searchRef?: React.RefObject<HTMLInputElement | null>;
@@ -17,6 +18,7 @@ const SQFT_RANGES = [
 ];
 
 export const PlotSearchTypeahead: React.FC<PlotSearchTypeaheadProps> = ({
+  plots = PLOTS_DATA,
   onSelectPlot,
   onSelectRange,
   searchRef,
@@ -38,7 +40,7 @@ export const PlotSearchTypeahead: React.FC<PlotSearchTypeaheadProps> = ({
   // Filter plots based on query or active range
   const filteredPlots = (() => {
     if (activeRange) {
-      return PLOTS_DATA.filter(p => p.areaSft >= activeRange.min && p.areaSft <= activeRange.max);
+      return plots.filter(p => p.areaSft >= activeRange.min && p.areaSft <= activeRange.max);
     }
 
     if (query.trim() === '') {
@@ -52,14 +54,14 @@ export const PlotSearchTypeahead: React.FC<PlotSearchTypeaheadProps> = ({
       if (searchNum2 && searchNum2 > 100) {
         const minVal = Math.min(searchNum, searchNum2);
         const maxVal = Math.max(searchNum, searchNum2);
-        return PLOTS_DATA.filter(p => p.areaSft >= minVal && p.areaSft <= maxVal);
+        return plots.filter(p => p.areaSft >= minVal && p.areaSft <= maxVal);
       }
       // Single number search: plots within ±600 sq.ft of the number
-      return PLOTS_DATA.filter(p => Math.abs(p.areaSft - searchNum) <= 650);
+      return plots.filter(p => Math.abs(p.areaSft - searchNum) <= 650);
     }
 
     // Default text search by plot number, zone, status
-    return PLOTS_DATA.filter(p => {
+    return plots.filter(p => {
       const numMatch = p.number.toString().includes(q);
       const zoneMatch = p.zone.toLowerCase().includes(q);
       const statusMatch = p.status.toLowerCase().includes(q);
@@ -71,7 +73,7 @@ export const PlotSearchTypeahead: React.FC<PlotSearchTypeaheadProps> = ({
   const handleSelectRange = (r: typeof SQFT_RANGES[0]) => {
     setActiveRange({ min: r.min, max: r.max });
     setQuery(`${r.min.toLocaleString()} – ${r.max.toLocaleString()} sq.ft`);
-    const matching = PLOTS_DATA.filter(p => p.areaSft >= r.min && p.areaSft <= r.max);
+    const matching = plots.filter(p => p.areaSft >= r.min && p.areaSft <= r.max);
     if (onSelectRange && matching.length > 0) {
       onSelectRange(r.min, r.max, matching);
     }

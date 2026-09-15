@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { IconX, IconChevronLeft, IconChevronRight } from '../common/Icons';
-import { GALLERY_PHOTOS, type GalleryPhoto } from '../../data/galleryPhotos';
+import type { GalleryPhoto } from '../../data/galleryPhotos';
+import { adminStore } from '../../services/adminStore';
 
 interface GalleryModalProps {
   isOpen: boolean;
@@ -11,9 +12,11 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) =
   // Dynamic remote photos fetched from the worker API (with curated fallbacks)
   const [remotePhotos, setRemotePhotos] = useState<GalleryPhoto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [localPhotos, setLocalPhotos] = useState<GalleryPhoto[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
+    setLocalPhotos(adminStore.getGalleryPhotos());
     setIsLoading(true);
     fetch('https://dinanath-industrial-park-plot-viewer.dinanath.workers.dev/api/gallery')
       .then(res => {
@@ -40,7 +43,8 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) =
       .finally(() => setIsLoading(false));
   }, [isOpen]);
 
-  const allPhotos = [...remotePhotos, ...GALLERY_PHOTOS];
+  // Combine admin store photos (custom uploads/manage) and worker photos, avoiding duplicate IDs
+  const allPhotos = [...localPhotos, ...remotePhotos.filter(rp => !localPhotos.some(lp => lp.url === rp.url))];
 
   // Lightbox state: if selectedPhoto is non-null, the zoom lightbox is active
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);

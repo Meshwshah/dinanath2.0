@@ -4,6 +4,7 @@ import { PlotSearchTypeahead } from './PlotSearchTypeahead';
 import { IconShare } from '../common/Icons';
 
 interface FloatingHudDockProps {
+  plots?: PlotData[];
   showCategories: boolean;
   activeCategory?: CategoryFilter;
   onSelectCategory?: (cat: CategoryFilter) => void;
@@ -21,6 +22,7 @@ interface FloatingHudDockProps {
 }
 
 export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
+  plots,
   showCategories,
   activeCategory = null,
   onSelectCategory,
@@ -45,6 +47,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
         {/* 1. Mobile Search Bar */}
         <div className="w-full">
           <PlotSearchTypeahead
+            plots={plots}
             onSelectPlot={onSelectPlot}
             onSelectRange={onSelectRange}
             searchRef={searchRef}
@@ -221,6 +224,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
           {/* Search Input Bar */}
           <div className="w-full">
             <PlotSearchTypeahead
+              plots={plots}
               onSelectPlot={onSelectPlot}
               onSelectRange={onSelectRange}
               searchRef={searchRef}

@@ -3,6 +3,7 @@ import type { PlotData, ViewMode, CategoryFilter } from '../../types/masterplan'
 import { PLOTS_DATA, COMMON_PLOTS, CANVAS_BOUNDS, pointsToPath } from '../../data/plotsData';
 
 interface SvgInteractivePlotsProps {
+  plots?: PlotData[];
   selectedPlotId: string | null;
   hoveredPlotId: string | null;
   highlightedPlotIds?: string[];
@@ -16,6 +17,7 @@ interface SvgInteractivePlotsProps {
 }
 
 export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
+  plots = PLOTS_DATA,
   selectedPlotId,
   hoveredPlotId,
   highlightedPlotIds = [],
@@ -218,7 +220,7 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
       })}
 
       {/* 2. All 69 Industrial Masterplan Plots */}
-      {PLOTS_DATA.map(plot => {
+      {plots.map(plot => {
         const isSelected = selectedPlotId === plot.id;
         const isHovered = hoveredPlotId === plot.id;
         const isHighlighted = highlightedPlotIds.includes(plot.id);
