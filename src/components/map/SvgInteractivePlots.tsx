@@ -70,21 +70,35 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
     }
 
     // When a specific category filter is active:
+    // User requirement: ONLY the clicked category itself becomes highlighted in its vivid color!
+    // The other categories must NOT become dark (no dark overlay, keep transparent & visible).
     if (activeCategory) {
       if (activeCategory === 'all') {
-        return isHovered ? 'rgba(56, 189, 248, 0.25)' : 'rgba(0, 0, 0, 0)';
+        switch (plot.zone) {
+          case 'Gold': return isHovered ? 'rgba(245, 158, 11, 0.60)' : 'rgba(245, 158, 11, 0.42)';
+          case 'Platinum': return isHovered ? 'rgba(236, 72, 153, 0.60)' : 'rgba(236, 72, 153, 0.42)';
+          case 'Diamond': return isHovered ? 'rgba(14, 165, 233, 0.60)' : 'rgba(14, 165, 233, 0.42)';
+        }
       } else if (activeCategory.toLowerCase() === plot.zone.toLowerCase()) {
-        // Only this specific zone is highlighted!
-        return isHovered ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0)';
+        // Only this specific zone is highlighted in its vivid zone color!
+        switch (plot.zone) {
+          case 'Gold': return isHovered ? 'rgba(245, 158, 11, 0.65)' : 'rgba(245, 158, 11, 0.45)';
+          case 'Platinum': return isHovered ? 'rgba(236, 72, 153, 0.65)' : 'rgba(236, 72, 153, 0.45)';
+          case 'Diamond': return isHovered ? 'rgba(14, 165, 233, 0.65)' : 'rgba(14, 165, 233, 0.45)';
+        }
       } else {
-        // Other non-matching categories are dimmed
-        return isHovered ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0.40)';
+        // Other non-matching categories: DO NOT DARKEN! Transparent fill so blueprint remains completely visible!
+        return isHovered ? 'rgba(56, 189, 248, 0.20)' : 'rgba(0, 0, 0, 0)';
       }
     }
 
-    // When Categories toggle is ON:
+    // When Categories toggle is ON (no specific activeCategory):
     if (showCategories) {
-      return isHovered ? 'rgba(56, 189, 248, 0.25)' : 'rgba(0, 0, 0, 0)';
+      switch (plot.zone) {
+        case 'Gold': return isHovered ? 'rgba(245, 158, 11, 0.60)' : 'rgba(245, 158, 11, 0.42)';
+        case 'Platinum': return isHovered ? 'rgba(236, 72, 153, 0.60)' : 'rgba(236, 72, 153, 0.42)';
+        case 'Diamond': return isHovered ? 'rgba(14, 165, 233, 0.60)' : 'rgba(14, 165, 233, 0.42)';
+      }
     }
 
     // DEFAULT STATE (no categories clicked, clean blueprint):
@@ -118,18 +132,27 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
     if (activeCategory) {
       if (activeCategory === 'all') {
         switch (plot.zone) {
-          case 'Gold': return 'rgba(217, 119, 6, 0.85)';
-          case 'Platinum': return 'rgba(219, 39, 119, 0.85)';
-          case 'Diamond': return 'rgba(14, 165, 233, 0.85)';
+          case 'Gold': return '#f59e0b';
+          case 'Platinum': return '#ec4899';
+          case 'Diamond': return '#0ea5e9';
         }
       } else if (activeCategory.toLowerCase() === plot.zone.toLowerCase()) {
         switch (plot.zone) {
           case 'Gold': return '#f59e0b';
           case 'Platinum': return '#ec4899';
-          case 'Diamond': return '#38bdf8';
+          case 'Diamond': return '#0ea5e9';
         }
       } else {
-        return 'rgba(255, 255, 255, 0.10)';
+        // Normal subtle boundary for other categories (NOT dimmed to invisible!)
+        return 'rgba(255, 255, 255, 0.25)';
+      }
+    }
+
+    if (showCategories) {
+      switch (plot.zone) {
+        case 'Gold': return '#f59e0b';
+        case 'Platinum': return '#ec4899';
+        case 'Diamond': return '#0ea5e9';
       }
     }
 
@@ -220,18 +243,34 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
             onPointerLeave={() => onPlotHover(null)}
           >
             {/* Interactive Hit Polygon */}
-            <path
-              d={pathD}
-              fill={fill}
-              stroke={stroke}
-              strokeWidth={isHighlighted ? 3.5 : isHovered || isSelected ? 3 : 1.2}
-              style={{
-                pointerEvents: 'all',
-                vectorEffect: 'non-scaling-stroke',
-                filter: isHighlighted ? 'drop-shadow(0 0 10px rgba(0, 229, 255, 0.9))' : undefined,
-                transition: 'fill 0.15s ease, stroke 0.15s ease',
-              }}
-            />
+            {(() => {
+              const isMatchingCategory = Boolean(
+                activeCategory &&
+                (activeCategory === 'all' || activeCategory.toLowerCase() === plot.zone.toLowerCase())
+              );
+              return (
+                <path
+                  d={pathD}
+                  fill={fill}
+                  stroke={stroke}
+                  strokeWidth={isHighlighted ? 3.5 : isHovered || isSelected ? 3 : isMatchingCategory ? 2.5 : 1.2}
+                  style={{
+                    pointerEvents: 'all',
+                    vectorEffect: 'non-scaling-stroke',
+                    filter: isHighlighted
+                      ? 'drop-shadow(0 0 10px rgba(0, 229, 255, 0.9))'
+                      : isMatchingCategory
+                      ? (plot.zone === 'Gold'
+                          ? 'drop-shadow(0 0 8px rgba(245, 158, 11, 0.6))'
+                          : plot.zone === 'Platinum'
+                          ? 'drop-shadow(0 0 8px rgba(236, 72, 153, 0.6))'
+                          : 'drop-shadow(0 0 8px rgba(14, 165, 233, 0.6))')
+                      : undefined,
+                    transition: 'fill 0.15s ease, stroke 0.15s ease',
+                  }}
+                />
+              );
+            })()}
 
             {/* Subtle crosshatching for SOLD plots when status toggle is ON */}
             {showStatus && plot.status === 'Sold' && (

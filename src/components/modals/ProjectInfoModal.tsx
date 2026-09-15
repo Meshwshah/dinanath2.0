@@ -97,29 +97,20 @@ export const ProjectInfoModal: React.FC<ProjectInfoModalProps> = ({ isOpen, onCl
             </ul>
           </div>
 
-          {/* Project Stakeholders */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] font-mono uppercase text-slate-400">Developer</span>
-                <div className="text-base font-bold text-white mt-1">Maitri Developers</div>
-                <p className="text-xs text-slate-400 mt-0.5">{SITE.client}</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">Industrial Infrastructure Developer</p>
-              </div>
-              <div className="h-12 w-auto px-2 py-1 rounded-xl bg-white shadow-md border border-white/10 shrink-0 flex items-center justify-center">
-                <img
-                  src={`${import.meta.env.BASE_URL}maitri-logo.png`}
-                  alt="Maitri Developers"
-                  className="h-full w-auto object-contain"
-                />
-              </div>
+          {/* Project Stakeholder */}
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex items-center justify-between gap-3">
+            <div>
+              <span className="text-[10px] font-mono uppercase text-slate-400">Developer</span>
+              <div className="text-base font-bold text-white mt-1">Maitri Developers</div>
+              <p className="text-xs text-slate-400 mt-0.5">{SITE.client}</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Industrial Infrastructure Developer</p>
             </div>
-
-            <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10">
-              <span className="text-[10px] font-mono uppercase text-slate-400">Architect & Engineer</span>
-              <div className="text-base font-bold text-white mt-1">{SITE.architect}</div>
-              <p className="text-xs text-slate-400 mt-0.5">{SITE.engineer}</p>
-              <p className="text-[11px] text-slate-500 mt-1">{SITE.officeAddress}</p>
+            <div className="h-12 w-auto px-2 py-1 rounded-xl bg-white shadow-md border border-white/10 shrink-0 flex items-center justify-center">
+              <img
+                src={`${import.meta.env.BASE_URL}maitri-logo.png`}
+                alt="Maitri Developers"
+                className="h-full w-auto object-contain"
+              />
             </div>
           </div>
         </div>
