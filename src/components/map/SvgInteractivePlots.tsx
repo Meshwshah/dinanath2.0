@@ -379,48 +379,6 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
           <text textAnchor="middle" dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="18" fontWeight="700">139.98</text>
         </g>
 
-        {/* West (Left Margin): Tree Plantation, Building Control, and Boundary Dimensions */}
-        <g transform="translate(65, 4070) rotate(-90)">
-          <text
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill="#cbd5e1"
-            stroke="#09090b"
-            strokeWidth="3.5"
-            paintOrder="stroke fill"
-            fontSize="20"
-            fontWeight="800"
-            letterSpacing="2.5"
-          >
-            BUILDING CONTROL LINE
-          </text>
-        </g>
-        <g transform="translate(35, 4950) rotate(-90)">
-          <text
-            textAnchor="middle"
-            dominantBaseline="central"
-            fill="#4ade80"
-            stroke="#09090b"
-            strokeWidth="3.5"
-            paintOrder="stroke fill"
-            fontSize="20"
-            fontWeight="800"
-            letterSpacing="2"
-          >
-            1.22 MT. WIDE TREE PLANTATION
-          </text>
-        </g>
-        <g>
-          <text x={60} y={450} dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">55.04</text>
-          <text x={90} y={930} dominantBaseline="central" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">31.89 / 21.78</text>
-          <text x={715} y={2000} transform="rotate(-90, 715, 2000)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">28.16</text>
-          <text x={745} y={2520} transform="rotate(-90, 745, 2520)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="17" fontWeight="700">81.69</text>
-          <text x={420} y={3450} textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">50.69</text>
-          <text x={50} y={3280} textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">22.52</text>
-          <text x={45} y={4200} transform="rotate(-90, 45, 4200)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">46.03</text>
-          <text x={45} y={4550} transform="rotate(-90, 45, 4550)" textAnchor="middle" fill="#f8fafc" stroke="#09090b" strokeWidth="3" paintOrder="stroke fill" fontSize="16" fontWeight="700">118.43</text>
-        </g>
-
         {/* North: 12.00 MT Wide Road Frontage & Boundary Dimensions */}
         <g>
           <text
