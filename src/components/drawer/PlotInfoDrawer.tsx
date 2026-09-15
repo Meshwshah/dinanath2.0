@@ -31,6 +31,8 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
 }) => {
   if (!plot) return null;
 
+  const isCommon = plot.id.startsWith('common-') || plot.zone === 'Common';
+
   const zoneColor =
     plot.zone === 'Gold'
       ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'
@@ -73,7 +75,7 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
               <IconChevronRight size={16} />
             </button>
             <span className="text-xs font-mono text-slate-400 ml-1">
-              Plot {plot.number} of 69
+              {isCommon ? 'Common Facility' : `Plot ${plot.number} of 69`}
             </span>
           </div>
 
@@ -100,13 +102,21 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
           {/* Title and Badges */}
           <div>
             <div className="flex items-center gap-2.5 mb-2">
-              <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider border ${zoneColor}`}>
-                {plot.zone} Zone
-              </span>
-              <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider border flex items-center gap-1.5 ${statusColor}`}>
-                <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                {plot.status}
-              </span>
+              {isCommon ? (
+                <span className="px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+                  Park Common Facility (Not For Sale)
+                </span>
+              ) : (
+                <>
+                  <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider border ${zoneColor}`}>
+                    {plot.zone} Zone
+                  </span>
+                  <span className={`px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider border flex items-center gap-1.5 ${statusColor}`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                    {plot.status}
+                  </span>
+                </>
+              )}
             </div>
             <h1 className="text-3xl font-extrabold tracking-tight text-white flex items-baseline gap-2">
               {plot.label}
@@ -176,13 +186,24 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
 
         {/* Footer Actions */}
         <div className="p-6 border-t border-white/10 bg-slate-950/70 space-y-2.5">
-          <button
-            onClick={() => onOpenInquiry(plot)}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold tracking-wide shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
-          >
-            <IconWhatsApp size={18} />
-            <span>Inquire About This Plot</span>
-          </button>
+          {isCommon ? (
+            <div className="w-full py-3 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold text-xs text-center flex items-center justify-center gap-2">
+              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span>Park Common Area &amp; Utilities • Not For Sale</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => onOpenInquiry(plot)}
+              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-bold tracking-wide shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]"
+            >
+              <IconWhatsApp size={18} />
+              <span>Inquire About This Plot</span>
+            </button>
+          )}
 
           <div className="grid grid-cols-2 gap-2">
             <a
@@ -220,12 +241,20 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
         <div className="flex items-center justify-between px-5 py-2 border-b border-white/10">
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold">{plot.label}</h2>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border ${statusColor}`}>
-              {plot.status}
-            </span>
-            <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border ${zoneColor}`}>
-              {plot.zone}
-            </span>
+            {isCommon ? (
+              <span className="px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
+                Not For Sale
+              </span>
+            ) : (
+              <>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border ${statusColor}`}>
+                  {plot.status}
+                </span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border ${zoneColor}`}>
+                  {plot.zone}
+                </span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -267,13 +296,19 @@ export const PlotInfoDrawer: React.FC<PlotInfoDrawerProps> = ({
             <span className="truncate max-w-[180px] font-medium text-right">{plot.roadFrontage}</span>
           </div>
 
-          <button
-            onClick={() => onOpenInquiry(plot)}
-            className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40"
-          >
-            <IconWhatsApp size={16} />
-            <span>Inquire on WhatsApp</span>
-          </button>
+          {isCommon ? (
+            <div className="w-full py-2.5 px-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold text-xs text-center flex items-center justify-center gap-1.5">
+              <span>Common Facility Area • Not For Sale</span>
+            </div>
+          ) : (
+            <button
+              onClick={() => onOpenInquiry(plot)}
+              className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40"
+            >
+              <IconWhatsApp size={16} />
+              <span>Inquire on WhatsApp</span>
+            </button>
+          )}
         </div>
       </aside>
     </>

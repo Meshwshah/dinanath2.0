@@ -261,8 +261,6 @@ export function App() {
         onOpenContact={() => setIsContactOpen(true)}
         activeCategory={activeCategory}
         onSelectCategory={handleSelectCategory}
-        onOpenMapView={() => setIsMapViewOpen(prev => !prev)}
-        isMapViewOpen={isMapViewOpen}
       />
 
       {/* Main Interactive SVG Masterplan Stage */}
