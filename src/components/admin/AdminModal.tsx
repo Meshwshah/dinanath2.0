@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { PlotData, PlotStatus } from '../../types/masterplan';
-import { adminStore, type StoredInquiry } from '../../services/adminStore';
+import { adminStore } from '../../services/adminStore';
 import type { GalleryPhoto } from '../../data/galleryPhotos';
 
 interface AdminModalProps {
@@ -19,8 +19,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [pinInput, setPinInput] = useState<string>('');
   const [pinError, setPinError] = useState<string>('');
 
-  // Active Tab: 'plots' | 'gallery' | 'leads' | 'settings'
-  const [activeTab, setActiveTab] = useState<'plots' | 'gallery' | 'leads' | 'settings'>('plots');
+  // Active Tab: 'plots' | 'gallery' | 'settings'
+  const [activeTab, setActiveTab] = useState<'plots' | 'gallery' | 'settings'>('plots');
 
   // Plots Management state
   const [plots, setPlots] = useState<PlotData[]>([]);
@@ -36,9 +36,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [newPhotoCategory, setNewPhotoCategory] = useState<string>('Site Progress');
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // Leads state
-  const [inquiries, setInquiries] = useState<StoredInquiry[]>([]);
 
   // Settings state
   const [currentPinInput, setCurrentPinInput] = useState<string>('');
@@ -58,7 +55,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const refreshData = () => {
     setPlots(adminStore.getPlots());
     setGalleryPhotos(adminStore.getGalleryPhotos());
-    setInquiries(adminStore.getInquiries());
     setIsAuthenticated(adminStore.isAuthenticated());
   };
 
@@ -212,31 +208,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     showToast('Backup JSON downloaded');
   };
 
-  // Export Leads to CSV
-  const handleExportLeadsCsv = () => {
-    if (inquiries.length === 0) {
-      alert('No leads to export');
-      return;
-    }
-    const headers = ['Date', 'Name', 'Phone', 'Email', 'Interested Plot', 'Message'];
-    const rows = inquiries.map(i => [
-      `"${i.date}"`,
-      `"${i.name.replace(/"/g, '""')}"`,
-      `"${i.phone}"`,
-      `"${(i.email || '').replace(/"/g, '""')}"`,
-      `"${(i.plotNumber || '').replace(/"/g, '""')}"`,
-      `"${(i.message || '').replace(/"/g, '""')}"`,
-    ]);
-    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `dinanath-leads-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showToast('Leads CSV downloaded');
-  };
 
   if (!isOpen) return null;
 
@@ -361,7 +332,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             
             {/* Quick Stats Summary Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2 p-3 sm:px-6 bg-[#18181b]/50 border-b border-white/5 text-xs shrink-0">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-4 gap-2 p-3 sm:px-6 bg-[#18181b]/50 border-b border-white/5 text-xs shrink-0">
               <div className="p-2 rounded-xl bg-white/5 border border-white/5">
                 <span className="text-slate-400 block text-[10px] uppercase font-semibold">Total Plots</span>
                 <span className="text-base font-extrabold text-white">{plots.length}</span>
@@ -377,10 +348,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               <div className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20">
                 <span className="text-rose-400 block text-[10px] uppercase font-semibold">Sold</span>
                 <span className="text-base font-extrabold text-rose-300">{countSold}</span>
-              </div>
-              <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 col-span-2 sm:col-span-1">
-                <span className="text-cyan-400 block text-[10px] uppercase font-semibold">Leads</span>
-                <span className="text-base font-extrabold text-cyan-300">{inquiries.length}</span>
               </div>
             </div>
 
@@ -408,18 +375,6 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               >
                 <span>📸</span>
                 <span>Gallery ({galleryPhotos.length})</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('leads')}
-                className={`px-3 sm:px-4 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all shrink-0 flex items-center gap-1.5 ${
-                  activeTab === 'leads'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                    : 'text-slate-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <span>👥</span>
-                <span>Leads ({inquiries.length})</span>
               </button>
 
               <button
@@ -799,94 +754,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                 </div>
               )}
 
-              {/* TAB 3: LEADS & INQUIRIES */}
-              {activeTab === 'leads' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold text-white">Customer Inquiries</h3>
-                      <p className="text-xs text-slate-400">
-                        Leads captured directly from website visitors
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={handleExportLeadsCsv}
-                        disabled={inquiries.length === 0}
-                        className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-semibold disabled:opacity-40"
-                      >
-                        📥 Export CSV
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (window.confirm('Clear all stored leads?')) {
-                            adminStore.clearInquiries();
-                            showToast('Leads cleared');
-                          }
-                        }}
-                        disabled={inquiries.length === 0}
-                        className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-white/10 text-xs disabled:opacity-40"
-                      >
-                        Clear All
-                      </button>
-                    </div>
-                  </div>
-
-                  {inquiries.length === 0 ? (
-                    <div className="p-12 text-center rounded-2xl bg-[#161619] border border-white/5 text-slate-500">
-                      <div className="text-3xl mb-2">📬</div>
-                      <p className="font-medium text-xs">No inquiries logged yet.</p>
-                      <p className="text-[11px] text-slate-600 mt-1">
-                        When users submit contact forms, they will appear here.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto rounded-2xl border border-white/10 bg-[#161619]">
-                      <table className="w-full text-left text-xs">
-                        <thead>
-                          <tr className="border-b border-white/10 bg-[#1c1c20] text-slate-400 font-semibold uppercase tracking-wider text-[10px]">
-                            <th className="p-3">Date</th>
-                            <th className="p-3">Name</th>
-                            <th className="p-3">Phone</th>
-                            <th className="p-3">Plot Interested</th>
-                            <th className="p-3">Message</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5">
-                          {inquiries.map(inq => (
-                            <tr key={inq.id} className="hover:bg-white/5">
-                              <td className="p-3 text-slate-400 whitespace-nowrap">{inq.date}</td>
-                              <td className="p-3 font-semibold text-white">{inq.name}</td>
-                              <td className="p-3">
-                                <a
-                                  href={`tel:${inq.phone}`}
-                                  className="font-mono text-cyan-400 hover:underline"
-                                >
-                                  {inq.phone}
-                                </a>
-                              </td>
-                              <td className="p-3">
-                                {inq.plotNumber ? (
-                                  <span className="px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300 font-mono font-bold">
-                                    Plot {inq.plotNumber}
-                                  </span>
-                                ) : (
-                                  <span className="text-slate-500">-</span>
-                                )}
-                              </td>
-                              <td className="p-3 text-slate-300 max-w-xs truncate">
-                                {inq.message || '-'}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* TAB 4: SETTINGS & CLOUDFLARE */}
+              {/* TAB 3: SETTINGS & CLOUDFLARE */}
               {activeTab === 'settings' && (
                 <div className="space-y-6 max-w-2xl">
                   {/* Cloudflare Deployment Status */}
