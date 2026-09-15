@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import type { PlotData, ViewMode, ToastMessage } from './types/masterplan';
+import type { PlotData, ViewMode, ToastMessage, CategoryFilter } from './types/masterplan';
 import { PLOTS_DATA } from './data/plotsData';
 import { SITE } from './data/siteConfig';
 import { useViewportCamera } from './hooks/useViewportCamera';
@@ -25,7 +25,9 @@ export function App() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Layer toggles & View Mode
-  const [showCategories, setShowCategories] = useState(true);
+  // Default state: NO categories clicked (clean neutral blueprint)
+  const [showCategories, setShowCategories] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>(null);
   const [showStatus, setShowStatus] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>('PDF');
 
@@ -91,9 +93,24 @@ export function App() {
     setSelectedPlot(null);
     setHighlightedPlotIds([]);
     setIsDrawerOpen(false);
+    setActiveCategory(null);
+    setShowCategories(false);
+    setShowStatus(false);
     resetCamera();
     window.history.replaceState({}, '', window.location.pathname);
   }, [resetCamera]);
+
+  // Category selection handler (All Categories, Gold, Platinum, Diamond)
+  const handleSelectCategory = useCallback((cat: CategoryFilter) => {
+    setActiveCategory(prev => {
+      const next = prev === cat ? null : cat;
+      setShowCategories(next !== null);
+      if (next !== null) {
+        setShowStatus(false);
+      }
+      return next;
+    });
+  }, []);
 
   // Toggle Categories handler (brighten / lighten)
   const handleToggleCategories = useCallback(() => {
@@ -101,6 +118,9 @@ export function App() {
       const next = !prev;
       if (next) {
         setShowStatus(false);
+        setActiveCategory('all');
+      } else {
+        setActiveCategory(null);
       }
       return next;
     });
@@ -112,8 +132,7 @@ export function App() {
       const next = !prev;
       if (next) {
         setShowCategories(false);
-      } else {
-        setShowCategories(true);
+        setActiveCategory(null);
       }
       return next;
     });
@@ -240,6 +259,10 @@ export function App() {
         onOpenGallery={() => setIsGalleryOpen(true)}
         onOpenInfo={() => setIsInfoOpen(true)}
         onOpenContact={() => setIsContactOpen(true)}
+        activeCategory={activeCategory}
+        onSelectCategory={handleSelectCategory}
+        onOpenMapView={() => setIsMapViewOpen(prev => !prev)}
+        isMapViewOpen={isMapViewOpen}
       />
 
       {/* Main Interactive SVG Masterplan Stage */}
@@ -253,6 +276,7 @@ export function App() {
           hoveredPlotId={hoveredPlotId}
           highlightedPlotIds={highlightedPlotIds}
           showCategories={showCategories}
+          activeCategory={activeCategory}
           showStatus={showStatus}
           onPlotClick={handleSelectPlot}
           onPlotHover={setHoveredPlotId}
@@ -279,6 +303,8 @@ export function App() {
       {/* Floating HUD Dock (Bottom-Right) matching user reference */}
       <FloatingHudDock
         showCategories={showCategories}
+        activeCategory={activeCategory}
+        onSelectCategory={handleSelectCategory}
         showStatus={showStatus}
         onToggleCategories={handleToggleCategories}
         onToggleStatus={handleToggleStatus}

@@ -1,10 +1,12 @@
-﻿import React from 'react';
-import type { PlotData, ViewMode } from '../../types/masterplan';
+import React from 'react';
+import type { PlotData, ViewMode, CategoryFilter } from '../../types/masterplan';
 import { PlotSearchTypeahead } from './PlotSearchTypeahead';
 import { IconShare } from '../common/Icons';
 
 interface FloatingHudDockProps {
   showCategories: boolean;
+  activeCategory?: CategoryFilter;
+  onSelectCategory?: (cat: CategoryFilter) => void;
   showStatus: boolean;
   onToggleCategories: () => void;
   onToggleStatus: () => void;
@@ -20,11 +22,11 @@ interface FloatingHudDockProps {
 
 export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
   showCategories,
+  activeCategory = null,
+  onSelectCategory,
   showStatus,
   onToggleCategories,
   onToggleStatus,
-  viewMode,
-  onChangeViewMode,
   onSelectPlot,
   onSelectRange,
   onOpenMapView,
@@ -32,12 +34,6 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
   onReset,
   searchRef,
 }) => {
-  const is3D = viewMode === '3D';
-
-  const toggle3D = () => {
-    onChangeViewMode(is3D ? 'PDF' : '3D');
-  };
-
   return (
     <>
       {/* ============================================================
@@ -46,7 +42,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
           ============================================================ */}
       <div className="fixed bottom-3 left-2.5 right-2.5 z-30 sm:hidden pointer-events-auto flex flex-col items-center gap-1.5">
         
-        {/* 1. Mobile Search Bar - Directly above the buttons for easy access */}
+        {/* 1. Mobile Search Bar */}
         <div className="w-full">
           <PlotSearchTypeahead
             onSelectPlot={onSelectPlot}
@@ -55,139 +51,124 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
           />
         </div>
 
-        {/* 2. Direct Active Legend Chip - Always visible without clicking any layers button */}
-        <div className="flex items-center justify-center gap-2 px-3 py-1 rounded-full bg-[#1c1c1c]/95 border border-white/15 backdrop-blur-xl shadow-xl text-[10px] font-bold text-slate-200 tracking-wide select-none">
-          {showStatus ? (
-            <>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_6px_#22c55e]" />
-                <span className="text-emerald-300">Available</span>
-              </span>
-              <span className="text-white/20">•</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_6px_#f59e0b]" />
-                <span className="text-amber-300">On Hold</span>
-              </span>
-              <span className="text-white/20">•</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#dc2626] shadow-[0_0_6px_#dc2626]" />
-                <span className="text-rose-300">Sold</span>
-              </span>
-            </>
-          ) : (
-            <>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#eab308] shadow-[0_0_6px_#eab308]" />
-                <span className="text-yellow-300">Gold</span>
-              </span>
-              <span className="text-white/20">•</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#ec4899] shadow-[0_0_6px_#ec4899]" />
-                <span className="text-pink-300">Platinum</span>
-              </span>
-              <span className="text-white/20">•</span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8] shadow-[0_0_6px_#38bdf8]" />
-                <span className="text-cyan-300">Diamond</span>
-              </span>
-            </>
-          )}
-        </div>
-
-        {/* 3. Mobile Action Dock: 1-tap direct toggles for Categories, Status, 3D, Map & Share */}
-        <div className="w-full flex items-center justify-between gap-1 p-1 rounded-2xl bg-[#1c1c1c]/95 border border-white/15 backdrop-blur-2xl shadow-2xl">
-          {/* Categories Button */}
+        {/* 2. Mobile Category & Status Quick Pills - 1-tap direct access */}
+        <div className="w-full flex items-center justify-between gap-1 p-1 rounded-2xl bg-[#1c1c1c]/95 border border-white/15 backdrop-blur-2xl shadow-xl overflow-x-auto no-scrollbar">
+          {/* All Categories */}
           <button
-            onClick={onToggleCategories}
-            className={`flex-1 h-9 px-2 rounded-xl text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 ${
-              showCategories
-                ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-md shadow-cyan-500/25'
-                : 'bg-[#262626] text-slate-300 hover:text-white'
+            onClick={() => {
+              if (onSelectCategory) {
+                onSelectCategory(activeCategory === 'all' ? null : 'all');
+              } else {
+                onToggleCategories();
+              }
+            }}
+            className={`flex-1 h-8 px-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all active:scale-95 flex items-center justify-center gap-1 ${
+              activeCategory === 'all' || (showCategories && !activeCategory)
+                ? 'bg-white/25 text-white border border-white/30 shadow-sm'
+                : 'bg-[#262626] text-slate-300'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${showCategories ? 'bg-cyan-300' : 'bg-slate-500'}`} />
-            <span>Categories</span>
+            <span>All</span>
           </button>
 
-          {/* Status Button */}
+          {/* Gold */}
+          <button
+            onClick={() => onSelectCategory && onSelectCategory(activeCategory === 'gold' ? null : 'gold')}
+            className={`flex-1 h-8 px-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all active:scale-95 flex items-center justify-center gap-1 ${
+              activeCategory === 'gold'
+                ? 'bg-amber-500/30 text-amber-200 border border-amber-500/50 shadow-sm'
+                : 'bg-[#262626] text-slate-300'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#eab308]" />
+            <span>Gold</span>
+          </button>
+
+          {/* Platinum */}
+          <button
+            onClick={() => onSelectCategory && onSelectCategory(activeCategory === 'platinum' ? null : 'platinum')}
+            className={`flex-1 h-8 px-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all active:scale-95 flex items-center justify-center gap-1 ${
+              activeCategory === 'platinum'
+                ? 'bg-pink-500/30 text-pink-200 border border-pink-500/50 shadow-sm'
+                : 'bg-[#262626] text-slate-300'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#ec4899]" />
+            <span>Plat</span>
+          </button>
+
+          {/* Diamond */}
+          <button
+            onClick={() => onSelectCategory && onSelectCategory(activeCategory === 'diamond' ? null : 'diamond')}
+            className={`flex-1 h-8 px-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all active:scale-95 flex items-center justify-center gap-1 ${
+              activeCategory === 'diamond'
+                ? 'bg-cyan-500/30 text-cyan-200 border border-cyan-500/50 shadow-sm'
+                : 'bg-[#262626] text-slate-300'
+            }`}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-[#38bdf8]" />
+            <span>Dia</span>
+          </button>
+
+          {/* Status Toggle */}
           <button
             onClick={onToggleStatus}
-            className={`flex-1 h-9 px-2 rounded-xl text-[11px] font-bold transition-all active:scale-95 flex items-center justify-center gap-1 ${
+            className={`flex-1 h-8 px-2 rounded-xl text-[10px] font-bold whitespace-nowrap transition-all active:scale-95 flex items-center justify-center gap-1 ${
               showStatus
-                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-500/25'
-                : 'bg-[#262626] text-slate-300 hover:text-white'
+                ? 'bg-emerald-600 text-white shadow-sm'
+                : 'bg-[#262626] text-slate-300'
             }`}
           >
             <span className={`w-1.5 h-1.5 rounded-full ${showStatus ? 'bg-emerald-300' : 'bg-slate-500'}`} />
             <span>Status</span>
           </button>
+        </div>
 
-          {/* 3D Mode Toggle */}
-          <button
-            onClick={toggle3D}
-            className={`h-9 px-2.5 rounded-xl text-[11px] font-bold transition-all active:scale-95 ${
-              is3D
-                ? 'bg-cyan-500 text-slate-950 font-black shadow-md shadow-cyan-500/30'
-                : 'bg-[#262626] text-white'
-            }`}
-          >
-            3D
-          </button>
-
+        {/* 3. Mobile Action Dock: Map, Share, Reset View */}
+        <div className="w-full flex items-center justify-between gap-1 p-1 rounded-2xl bg-[#1c1c1c]/95 border border-white/15 backdrop-blur-2xl shadow-2xl">
           {/* Satellite Map Button */}
           <button
             onClick={onOpenMapView}
-            className="h-9 px-2.5 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 active:scale-95 text-white text-[11px] font-bold shadow-md flex items-center gap-1"
+            className="flex-1 h-9 px-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 active:scale-95 text-white text-xs font-bold shadow-md flex items-center justify-center gap-1.5"
           >
-            <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
               <line x1="8" y1="2" x2="8" y2="18" />
               <line x1="16" y1="6" x2="16" y2="22" />
             </svg>
-            <span>Map</span>
+            <span>Real Map</span>
           </button>
 
           {/* Share Button */}
           <button
             onClick={onShare}
-            className="w-9 h-9 rounded-xl bg-[#262626] active:scale-95 text-slate-300 flex items-center justify-center shrink-0"
+            className="h-9 px-3 rounded-xl bg-[#262626] active:scale-95 text-slate-300 flex items-center justify-center gap-1 text-xs font-semibold"
             title="Share"
           >
-            <IconShare size={14} />
+            <IconShare size={13} />
+            <span>Share</span>
           </button>
 
           {/* Orient North / Reset View */}
           <button
             onClick={onReset}
-            className="w-9 h-9 rounded-xl bg-[#262626] active:scale-90 text-cyan-400 flex items-center justify-center shrink-0"
-            title="Orient North / Reset View"
+            className="h-9 px-3 rounded-xl bg-[#262626] active:scale-90 text-cyan-400 flex items-center justify-center gap-1 text-xs font-semibold"
+            title="Reset View"
           >
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <polygon points="12 2 19 21 12 17 5 21 12 2" />
             </svg>
+            <span>Reset</span>
           </button>
         </div>
       </div>
 
       {/* ============================================================
           DESKTOP FLOATING HUD DOCK (Viewport >= 640px)
-          Always accessible without extra layer toggle button
           ============================================================ */}
       <div className="fixed bottom-6 right-6 z-30 hidden sm:flex flex-col items-end pointer-events-none gap-2.5">
-        {/* 1. TOP MINI DOCK ROW: [ 3D | Share | Compass ] */}
+        {/* 1. TOP MINI DOCK ROW: [ Share | Compass / Reset ] */}
         <div className="pointer-events-auto flex items-center gap-1.5 p-1.5 rounded-2xl bg-[#1c1c1c]/95 border border-white/10 shadow-2xl backdrop-blur-xl">
-          <button
-            onClick={toggle3D}
-            className={`h-10 px-3.5 rounded-xl text-xs font-black tracking-wider transition-all active:scale-95 shadow-sm flex items-center justify-center ${
-              is3D
-                ? 'bg-cyan-500 text-slate-950 shadow-cyan-500/25'
-                : 'bg-[#262626] hover:bg-[#323232] text-white'
-            }`}
-            title="Toggle 3D View"
-          >
-            3D
-          </button>
-
           <button
             onClick={onShare}
             className="w-10 h-10 rounded-xl bg-[#262626] hover:bg-[#323232] text-slate-300 hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
@@ -198,7 +179,7 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
 
           <button
             onClick={onReset}
-            className="w-10 h-10 rounded-xl bg-[#262626] hover:bg-[#323232] text-slate-300 hover:text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
+            className="w-10 h-10 rounded-xl bg-[#262626] hover:bg-[#323232] text-cyan-400 hover:text-cyan-300 flex items-center justify-center transition-all active:scale-95 shadow-sm"
             title="Orient North / Reset View"
           >
             <svg width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

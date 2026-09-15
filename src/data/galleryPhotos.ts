@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Dinanath Industrial Park - Gallery Photos Data
  *
  * ADMIN INSTRUCTIONS:
@@ -19,6 +19,9 @@ export interface GalleryPhoto {
   title: string;
   url: string;
   alt?: string;
+  date?: string;
+  category?: string;
+  description?: string;
 }
 
 export const GALLERY_PHOTOS: GalleryPhoto[] = [

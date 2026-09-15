@@ -70,60 +70,66 @@ export const ContactModal: React.FC<ContactModalProps> = ({
           </div>
         </div>
 
-        <div className="space-y-2.5 mb-4">
+        <div className="space-y-3 mb-5">
           {/* Phone Line 1 */}
-          <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10">
-            <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Sales Line 1</div>
-            <div className="flex items-center justify-between">
-              <span className="text-base sm:text-lg font-black font-mono tracking-wide text-white">
-                {SITE.contactPhone}
+          <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-cyan-500/30 transition-colors">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-1">
+              <span className="uppercase tracking-wider">Sales Line 1</span>
+              <span className="text-emerald-400 flex items-center gap-1 text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Direct Developer
               </span>
-              <div className="flex items-center gap-1.5">
-                <a
-                  href={`tel:${SITE.contactPhone.replace(/\s+/g, '')}`}
-                  className="px-2.5 py-1 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-cyan-900/30"
-                >
-                  <IconPhone size={12} />
-                  <span>Call</span>
-                </a>
-                <a
-                  href={whatsappInquiryUrl(undefined, undefined, SITE.contactPhone)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-emerald-900/30"
-                >
-                  <IconWhatsApp size={12} />
-                  <span>WhatsApp</span>
-                </a>
-              </div>
+            </div>
+            <div className="text-lg sm:text-xl font-black font-mono tracking-wider text-white mb-2.5 whitespace-nowrap">
+              {SITE.contactPhone}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`tel:${SITE.contactPhone.replace(/\s+/g, '')}`}
+                className="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md shadow-cyan-950/40"
+              >
+                <IconPhone size={13} />
+                <span>Call Line 1</span>
+              </a>
+              <a
+                href={whatsappInquiryUrl(undefined, undefined, SITE.contactPhone)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md shadow-emerald-950/40"
+              >
+                <IconWhatsApp size={13} />
+                <span>WhatsApp</span>
+              </a>
             </div>
           </div>
 
           {/* Phone Line 2 */}
-          <div className="p-3 rounded-2xl bg-white/[0.03] border border-white/10">
-            <div className="text-[10px] uppercase font-bold text-slate-400 mb-1">Sales Line 2</div>
-            <div className="flex items-center justify-between">
-              <span className="text-base sm:text-lg font-black font-mono tracking-wide text-white">
-                {SITE.contactPhone2}
+          <div className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-cyan-500/30 transition-colors">
+            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-1">
+              <span className="uppercase tracking-wider">Sales Line 2</span>
+              <span className="text-emerald-400 flex items-center gap-1 text-[10px]">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Direct Developer
               </span>
-              <div className="flex items-center gap-1.5">
-                <a
-                  href={`tel:${SITE.contactPhone2.replace(/\s+/g, '')}`}
-                  className="px-2.5 py-1 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-cyan-900/30"
-                >
-                  <IconPhone size={12} />
-                  <span>Call</span>
-                </a>
-                <a
-                  href={whatsappInquiryUrl(undefined, undefined, SITE.contactPhone2)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2.5 py-1 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 transition-all active:scale-95 shadow-md shadow-emerald-900/30"
-                >
-                  <IconWhatsApp size={12} />
-                  <span>WhatsApp</span>
-                </a>
-              </div>
+            </div>
+            <div className="text-lg sm:text-xl font-black font-mono tracking-wider text-white mb-2.5 whitespace-nowrap">
+              {SITE.contactPhone2}
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <a
+                href={`tel:${SITE.contactPhone2.replace(/\s+/g, '')}`}
+                className="py-2 px-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md shadow-cyan-950/40"
+              >
+                <IconPhone size={13} />
+                <span>Call Line 2</span>
+              </a>
+              <a
+                href={whatsappInquiryUrl(undefined, undefined, SITE.contactPhone2)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-md shadow-emerald-950/40"
+              >
+                <IconWhatsApp size={13} />
+                <span>WhatsApp</span>
+              </a>
             </div>
           </div>
         </div>

@@ -2,7 +2,9 @@ export type Zone = 'Gold' | 'Platinum' | 'Diamond' | 'Common';
 
 export type PlotStatus = 'Available' | 'On Hold' | 'Sold';
 
-export type ViewMode = 'PDF' | 'Dark' | 'Satellite' | '3D';
+export type ViewMode = 'PDF' | 'Dark' | 'Satellite';
+
+export type CategoryFilter = 'all' | 'gold' | 'platinum' | 'diamond' | null;
 
 export interface PlotDimensions {
   width: number;

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { ViewMode } from '../../types/masterplan';
-import { IconMap, IconCube3D } from '../common/Icons';
+import { IconMap } from '../common/Icons';
 
 interface ViewModeSwitcherProps {
   viewMode: ViewMode;
@@ -36,11 +36,6 @@ export const ViewModeSwitcher: React.FC<ViewModeSwitcherProps> = ({
           <path d="M2 12h20" />
         </svg>
       ),
-    },
-    {
-      id: '3D',
-      label: '3D Mode',
-      icon: <IconCube3D size={13} />,
     },
   ];
 

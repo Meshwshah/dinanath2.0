@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PlotData, ViewMode, CameraState } from '../../types/masterplan';
+import type { PlotData, ViewMode, CameraState, CategoryFilter } from '../../types/masterplan';
 import { CANVAS_BOUNDS } from '../../data/plotsData';
 import { SvgBaseBlueprint } from './SvgBaseBlueprint';
 import { SvgInteractivePlots } from './SvgInteractivePlots';
@@ -14,6 +14,7 @@ interface MasterplanViewerProps {
   hoveredPlotId: string | null;
   highlightedPlotIds?: string[];
   showCategories: boolean;
+  activeCategory?: CategoryFilter;
   showStatus: boolean;
   onPlotClick: (plot: PlotData) => void;
   onPlotHover: (plotId: string | null) => void;
@@ -34,6 +35,7 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
   hoveredPlotId,
   highlightedPlotIds = [],
   showCategories,
+  activeCategory = null,
   showStatus,
   onPlotClick,
   onPlotHover,
@@ -41,12 +43,6 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
   listeners,
   wasDragged,
 }) => {
-  const is3D = viewMode === '3D';
-
-  // Simple, normal 3D architectural isometric perspective
-  const pitch = 28; // gentle 28° architectural tilt
-  const yaw = -10; // subtle -10° isometric perspective
-
   return (
     <div
       ref={containerRef}
@@ -77,70 +73,49 @@ export const MasterplanViewer: React.FC<MasterplanViewerProps> = ({
         }
       }}
     >
-      {/* 3D Perspective Wrapper */}
+      {/* 2D Camera Viewport: Pans and Zooms with high precision */}
       <div
-        className="w-full h-full transform-gpu"
+        className="w-full h-full origin-top-left transform-gpu"
         style={{
-          perspective: is3D ? '1400px' : 'none',
-          perspectiveOrigin: '50% 50%',
+          transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
+          transformOrigin: '0 0',
+          transition: camera.isTransitioning
+            ? 'transform 320ms cubic-bezier(0.16, 1, 0.3, 1)'
+            : 'none',
         }}
       >
-        {/* 3D Elevation & Isometric Rotation */}
-        <div
-          className="w-full h-full transform-gpu origin-center"
+        {/* Main Masterplan SVG */}
+        <svg
+          id="masterplan-svg"
+          viewBox={`0 0 ${CANVAS_BOUNDS.width} ${CANVAS_BOUNDS.height}`}
+          width={CANVAS_BOUNDS.width}
+          height={CANVAS_BOUNDS.height}
+          className="overflow-visible block"
           style={{
-            transform: is3D ? `rotateX(${pitch}deg) rotateZ(${yaw}deg)` : 'rotateX(0deg) rotateZ(0deg)',
-            transformStyle: 'preserve-3d',
-            transition: 'transform 400ms cubic-bezier(0.16, 1, 0.3, 1)',
+            shapeRendering: 'geometricPrecision',
+            textRendering: 'geometricPrecision',
           }}
         >
-          {/* Camera Viewport: Pans and Zooms accurately in 2D and 3D */}
-          <div
-            className="w-full h-full origin-top-left transform-gpu"
-            style={{
-              transform: `translate(${camera.x}px, ${camera.y}px) scale(${camera.scale})`,
-              transformOrigin: '0 0',
-              transition: camera.isTransitioning
-                ? 'transform 320ms cubic-bezier(0.16, 1, 0.3, 1)'
-                : 'none',
-              filter: is3D
-                ? 'drop-shadow(0 40px 65px rgba(0,0,0,0.85)) drop-shadow(0 15px 30px rgba(0,0,0,0.6))'
-                : 'none',
-            }}
-          >
-            {/* Main Masterplan SVG */}
-            <svg
-              id="masterplan-svg"
-              viewBox={`0 0 ${CANVAS_BOUNDS.width} ${CANVAS_BOUNDS.height}`}
-              width={CANVAS_BOUNDS.width}
-              height={CANVAS_BOUNDS.height}
-              className="overflow-visible block"
-              style={{
-                shapeRendering: 'geometricPrecision',
-                textRendering: 'geometricPrecision',
-              }}
-            >
-              {/* Layer 1: Base Blueprint & Road Networks */}
-              <SvgBaseBlueprint viewMode={viewMode} />
+          {/* Layer 1: Base Blueprint & Road Networks */}
+          <SvgBaseBlueprint viewMode={viewMode} />
 
-              {/* Layer 2 & 3: Masterplan Vector Interactive Plots & Hover FX */}
-              <SvgInteractivePlots
-                selectedPlotId={selectedPlot?.id ?? null}
-                hoveredPlotId={hoveredPlotId}
-                highlightedPlotIds={highlightedPlotIds}
-                showCategories={showCategories}
-                showStatus={showStatus}
-                viewMode={viewMode}
-                onPlotClick={onPlotClick}
-                onPlotHover={onPlotHover}
-                wasDragged={wasDragged}
-              />
+          {/* Layer 2 & 3: Masterplan Vector Interactive Plots, Dark Bold Labels & Outside Annotations */}
+          <SvgInteractivePlots
+            selectedPlotId={selectedPlot?.id ?? null}
+            hoveredPlotId={hoveredPlotId}
+            highlightedPlotIds={highlightedPlotIds}
+            showCategories={showCategories}
+            activeCategory={activeCategory}
+            showStatus={showStatus}
+            viewMode={viewMode}
+            onPlotClick={onPlotClick}
+            onPlotHover={onPlotHover}
+            wasDragged={wasDragged}
+          />
 
-              {/* Layer 4: Active Selection Stroke & Glow */}
-              <SvgHighlightStroke selectedPlot={selectedPlot} />
-            </svg>
-          </div>
-        </div>
+          {/* Layer 4: Active Selection Stroke & Glow */}
+          <SvgHighlightStroke selectedPlot={selectedPlot} />
+        </svg>
       </div>
 
 

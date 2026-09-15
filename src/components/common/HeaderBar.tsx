@@ -1,17 +1,26 @@
 import React from 'react';
 import { SITE, googleMapsDirectionsUrl } from '../../data/siteConfig';
 import { IconGallery, IconInfo } from './Icons';
+import type { CategoryFilter } from '../../types/masterplan';
 
 interface HeaderBarProps {
   onOpenGallery: () => void;
   onOpenInfo: () => void;
   onOpenContact: () => void;
+  activeCategory?: CategoryFilter;
+  onSelectCategory?: (cat: CategoryFilter) => void;
+  onOpenMapView?: () => void;
+  isMapViewOpen?: boolean;
 }
 
 export const HeaderBar: React.FC<HeaderBarProps> = ({
   onOpenGallery,
   onOpenInfo,
   onOpenContact,
+  activeCategory = null,
+  onSelectCategory,
+  onOpenMapView,
+  isMapViewOpen = false,
 }) => {
   const handleDirections = () => {
     window.open(googleMapsDirectionsUrl(), '_blank', 'noopener,noreferrer');
@@ -45,6 +54,84 @@ export const HeaderBar: React.FC<HeaderBarProps> = ({
             <span className="hidden sm:inline">33,493 SMT</span>
           </p>
         </div>
+      </div>
+
+      {/* Category Quick Filters & Real Map Button (Desktop & Tablet >= 768px) */}
+      <div className="pointer-events-auto hidden md:flex items-center gap-2">
+        {onSelectCategory && (
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-[#1c1c1c]/95 border border-white/10 backdrop-blur-xl shadow-xl">
+            {/* All Categories */}
+            <button
+              onClick={() => onSelectCategory(activeCategory === 'all' ? null : 'all')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all active:scale-95 ${
+                activeCategory === 'all'
+                  ? 'bg-white/20 text-white border border-white/30 shadow-sm'
+                  : 'text-slate-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              All Categories
+            </button>
+
+            {/* Gold */}
+            <button
+              onClick={() => onSelectCategory(activeCategory === 'gold' ? null : 'gold')}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 ${
+                activeCategory === 'gold'
+                  ? 'bg-amber-500/25 text-amber-200 border border-amber-500/50 shadow-sm'
+                  : 'text-slate-400 hover:text-amber-300 hover:bg-white/5'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#eab308]" />
+              <span>Gold</span>
+            </button>
+
+            {/* Platinum */}
+            <button
+              onClick={() => onSelectCategory(activeCategory === 'platinum' ? null : 'platinum')}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 ${
+                activeCategory === 'platinum'
+                  ? 'bg-pink-500/25 text-pink-200 border border-pink-500/50 shadow-sm'
+                  : 'text-slate-400 hover:text-pink-300 hover:bg-white/5'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#ec4899]" />
+              <span>Platinum</span>
+            </button>
+
+            {/* Diamond */}
+            <button
+              onClick={() => onSelectCategory(activeCategory === 'diamond' ? null : 'diamond')}
+              className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 ${
+                activeCategory === 'diamond'
+                  ? 'bg-cyan-500/25 text-cyan-200 border border-cyan-500/50 shadow-sm'
+                  : 'text-slate-400 hover:text-cyan-300 hover:bg-white/5'
+              }`}
+            >
+              <span className="w-2 h-2 rounded-full bg-[#38bdf8]" />
+              <span>Diamond</span>
+            </button>
+          </div>
+        )}
+
+        {/* View Layout on Real Map button */}
+        {onOpenMapView && (
+          <button
+            onClick={onOpenMapView}
+            className={`px-3 py-2 rounded-2xl text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 shadow-xl backdrop-blur-xl ${
+              isMapViewOpen
+                ? 'bg-blue-600 text-white border border-blue-400 shadow-blue-500/30'
+                : 'bg-[#1c1c1c]/95 border border-blue-500/30 text-blue-400 hover:text-white hover:bg-blue-600/20'
+            }`}
+            title="View layout on real map"
+          >
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+            <span className="hidden lg:inline">View layout on real map</span>
+            <span className="lg:hidden">Real Map</span>
+          </button>
+        )}
       </div>
 
       {/* Top-Right Action Buttons: Clean & perfectly proportioned for mobile & desktop */}
