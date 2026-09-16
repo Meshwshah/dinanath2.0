@@ -15,6 +15,7 @@ function jsonResponse(data: any, status = 200): Response {
     status,
     headers: {
       'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
       ...CORS_HEADERS,
     },
   });
