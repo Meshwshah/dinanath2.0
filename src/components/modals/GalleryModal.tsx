@@ -181,9 +181,11 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) =
                 </svg>
                 <span>Dinanath Industrial Park — Site Photo Gallery</span>
               </h2>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-mono font-semibold">
-                {allPhotos.length} Photos
-              </span>
+              {allPhotos.length > 0 && (
+                <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-sans font-bold">
+                  {allPhotos.length} {allPhotos.length === 1 ? 'Photo' : 'Photos'}
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-400 hidden sm:block">
               Real site photographs, development progress &amp; infrastructure
