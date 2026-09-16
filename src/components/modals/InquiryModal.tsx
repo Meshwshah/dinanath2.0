@@ -3,7 +3,6 @@ import confetti from 'canvas-confetti';
 import type { PlotData } from '../../types/masterplan';
 import { SITE } from '../../data/siteConfig';
 import { IconX, IconWhatsApp, IconPhone, IconCheck } from '../common/Icons';
-import { adminStore } from '../../services/adminStore';
 
 interface InquiryModalProps {
   plot: PlotData | null;
@@ -28,15 +27,6 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Log lead in admin store
-    adminStore.addInquiry({
-      name: buyerName || 'Interested Buyer',
-      phone: buyerPhone || 'Not provided',
-      email: buyerCompany,
-      plotNumber: plot.number.toString(),
-      message: note || `Inquiry for Plot ${plot.number}`,
-    });
 
     // Trigger celebratory confetti
     confetti({

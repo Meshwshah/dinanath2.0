@@ -263,13 +263,28 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
           <div className="flex items-center gap-2">
             {isAuthenticated && (
-              <button
-                onClick={handleLogout}
-                className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 border border-white/10 text-xs font-semibold text-slate-300 transition-all active:scale-95"
-                title="Logout"
-              >
-                Logout
-              </button>
+              <>
+                <button
+                  onClick={async () => {
+                    showToast('Syncing with Cloudflare KV...');
+                    await adminStore.syncWithCloud();
+                    refreshData();
+                    showToast('Cloud Sync Complete!');
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95"
+                  title="Force Sync with Cloudflare KV"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="hidden sm:inline">Cloud Synced</span>
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 border border-white/10 text-xs font-semibold text-slate-300 transition-all active:scale-95"
+                  title="Logout"
+                >
+                  Logout
+                </button>
+              </>
             )}
             <button
               onClick={onClose}
@@ -871,8 +886,9 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             const file = e.target.files?.[0];
                             if (!file) return;
                             const reader = new FileReader();
-                            reader.onload = () => {
-                              if (adminStore.importBackupJson(reader.result as string)) {
+                            reader.onload = async () => {
+                              const success = await adminStore.importBackupJson(reader.result as string);
+                              if (success) {
                                 showToast('Backup imported successfully!');
                               } else {
                                 alert('Failed to parse backup JSON.');

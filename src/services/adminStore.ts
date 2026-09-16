@@ -10,34 +10,29 @@ export interface PlotOverride {
   updatedAt?: string;
 }
 
-export interface StoredInquiry {
-  id: string;
-  name: string;
-  phone: string;
-  email?: string;
-  plotNumber?: string;
-  message?: string;
-  date: string;
-}
-
 const STORAGE_KEYS = {
   PLOTS_OVERRIDES: 'dinanath_plots_overrides',
   GALLERY_PHOTOS: 'dinanath_gallery_photos',
-  INQUIRIES: 'dinanath_inquiries',
   ADMIN_PIN: 'dinanath_admin_pin',
   ADMIN_SESSION: 'dinanath_admin_session',
+  LAST_SYNC: 'dinanath_last_sync',
 };
 
 const DEFAULT_PIN = '2026';
-
-// Event for syncing across tabs/components
 const CHANGE_EVENT = 'dinanath_store_change';
+const API_BASE = 'https://dinanath-api.dinanath.workers.dev';
 
 function emitChange() {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
   }
 }
+
+// In-memory cache for fast synchronous access
+let cachedOverrides: Record<string, PlotOverride> | null = null;
+let cachedGallery: GalleryPhoto[] | null = null;
+let isSyncing = false;
+let syncStatus: 'synced' | 'syncing' | 'offline' = 'synced';
 
 export const adminStore = {
   subscribe(callback: () => void): () => void {
@@ -46,8 +41,68 @@ export const adminStore = {
     return () => window.removeEventListener(CHANGE_EVENT, callback);
   },
 
+  getSyncStatus(): 'synced' | 'syncing' | 'offline' {
+    return syncStatus;
+  },
+
+  // --- CLOUD SYNC (Cross-Device Cloudflare KV) ---
+  async syncWithCloud(): Promise<boolean> {
+    if (typeof window === 'undefined' || isSyncing) return false;
+    isSyncing = true;
+    syncStatus = 'syncing';
+    emitChange();
+
+    try {
+      const res = await fetch(`${API_BASE}/api/sync`, {
+        headers: { 'Cache-Control': 'no-cache' },
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+
+      let hasChanges = false;
+
+      // Sync Plots Overrides
+      if (data.plotsOverrides && typeof data.plotsOverrides === 'object') {
+        const localOverridesStr = localStorage.getItem(STORAGE_KEYS.PLOTS_OVERRIDES) || '{}';
+        const serverOverridesStr = JSON.stringify(data.plotsOverrides);
+        if (localOverridesStr !== serverOverridesStr) {
+          localStorage.setItem(STORAGE_KEYS.PLOTS_OVERRIDES, serverOverridesStr);
+          cachedOverrides = data.plotsOverrides;
+          hasChanges = true;
+        }
+      }
+
+      // Sync Gallery Photos
+      if (Array.isArray(data.galleryPhotos) && data.galleryPhotos.length > 0) {
+        const localGalleryStr = localStorage.getItem(STORAGE_KEYS.GALLERY_PHOTOS) || '[]';
+        const serverGalleryStr = JSON.stringify(data.galleryPhotos);
+        if (localGalleryStr !== serverGalleryStr) {
+          localStorage.setItem(STORAGE_KEYS.GALLERY_PHOTOS, serverGalleryStr);
+          cachedGallery = data.galleryPhotos;
+          hasChanges = true;
+        }
+      }
+
+      syncStatus = 'synced';
+      localStorage.setItem(STORAGE_KEYS.LAST_SYNC, Date.now().toString());
+
+      if (hasChanges) {
+        emitChange();
+      }
+      return true;
+    } catch (err) {
+      console.warn('[Cloud Sync] Offline or failed to reach Cloudflare KV:', err);
+      syncStatus = 'offline';
+      emitChange();
+      return false;
+    } finally {
+      isSyncing = false;
+    }
+  },
+
   // --- AUTHENTICATION ---
   getPin(): string {
+    if (typeof window === 'undefined') return DEFAULT_PIN;
     return localStorage.getItem(STORAGE_KEYS.ADMIN_PIN) || DEFAULT_PIN;
   },
 
@@ -67,18 +122,23 @@ export const adminStore = {
   },
 
   logout(): void {
-    sessionStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem(STORAGE_KEYS.ADMIN_SESSION);
+    }
   },
 
   isAuthenticated(): boolean {
+    if (typeof window === 'undefined') return false;
     return sessionStorage.getItem(STORAGE_KEYS.ADMIN_SESSION) === 'true';
   },
 
   // --- PLOTS MANAGEMENT ---
   getPlotOverrides(): Record<string, PlotOverride> {
+    if (cachedOverrides !== null) return cachedOverrides;
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.PLOTS_OVERRIDES);
-      return raw ? JSON.parse(raw) : {};
+      cachedOverrides = raw ? JSON.parse(raw) : {};
+      return cachedOverrides || {};
     } catch {
       return {};
     }
@@ -98,30 +158,34 @@ export const adminStore = {
     });
   },
 
-  updatePlotStatus(plotId: string, status: PlotStatus): void {
-    const overrides = this.getPlotOverrides();
+  async updatePlotStatus(plotId: string, status: PlotStatus): Promise<void> {
+    const overrides = { ...this.getPlotOverrides() };
     overrides[plotId] = {
       ...(overrides[plotId] || {}),
       status,
       updatedAt: new Date().toISOString(),
     };
+    cachedOverrides = overrides;
     localStorage.setItem(STORAGE_KEYS.PLOTS_OVERRIDES, JSON.stringify(overrides));
+    emitChange();
+
+    // Push immediately to Cloudflare KV for cross-device persistence
+    try {
+      await fetch(`${API_BASE}/api/plots`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plotId, status }),
+      });
+      syncStatus = 'synced';
+    } catch (err) {
+      console.error('[Cloudflare KV] Failed to sync plot status:', err);
+      syncStatus = 'offline';
+    }
     emitChange();
   },
 
-  updatePlotDetails(plotId: string, updates: Partial<PlotOverride>): void {
-    const overrides = this.getPlotOverrides();
-    overrides[plotId] = {
-      ...(overrides[plotId] || {}),
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-    localStorage.setItem(STORAGE_KEYS.PLOTS_OVERRIDES, JSON.stringify(overrides));
-    emitChange();
-  },
-
-  bulkUpdatePlotStatus(plotIds: string[], status: PlotStatus): void {
-    const overrides = this.getPlotOverrides();
+  async bulkUpdatePlotStatus(plotIds: string[], status: PlotStatus): Promise<void> {
+    const overrides = { ...this.getPlotOverrides() };
     const now = new Date().toISOString();
     plotIds.forEach(id => {
       overrides[id] = {
@@ -130,77 +194,116 @@ export const adminStore = {
         updatedAt: now,
       };
     });
+    cachedOverrides = overrides;
     localStorage.setItem(STORAGE_KEYS.PLOTS_OVERRIDES, JSON.stringify(overrides));
+    emitChange();
+
+    // Push to Cloudflare KV
+    try {
+      await fetch(`${API_BASE}/api/plots`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bulkUpdates: plotIds.map(id => ({ plotId: id, status })),
+        }),
+      });
+      syncStatus = 'synced';
+    } catch (err) {
+      console.error('[Cloudflare KV] Failed to bulk sync:', err);
+      syncStatus = 'offline';
+    }
     emitChange();
   },
 
-  resetPlots(): void {
+  async resetPlots(): Promise<void> {
+    cachedOverrides = {};
     localStorage.removeItem(STORAGE_KEYS.PLOTS_OVERRIDES);
+    emitChange();
+
+    try {
+      await fetch(`${API_BASE}/api/plots/reset`, { method: 'POST' });
+      syncStatus = 'synced';
+    } catch (err) {
+      console.error('[Cloudflare KV] Failed to reset plots:', err);
+    }
     emitChange();
   },
 
   // --- GALLERY MANAGEMENT ---
   getGalleryPhotos(): GalleryPhoto[] {
+    if (cachedGallery !== null) return cachedGallery;
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.GALLERY_PHOTOS);
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          cachedGallery = parsed;
           return parsed;
         }
       }
     } catch {}
+    cachedGallery = GALLERY_PHOTOS;
     return GALLERY_PHOTOS;
   },
 
-  addGalleryPhoto(photo: Omit<GalleryPhoto, 'id'>): GalleryPhoto {
+  async addGalleryPhoto(photo: Omit<GalleryPhoto, 'id'>): Promise<GalleryPhoto> {
     const photos = [...this.getGalleryPhotos()];
     const newPhoto: GalleryPhoto = {
-      id: `custom-photo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      id: `photo-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       ...photo,
     };
     photos.unshift(newPhoto);
+    cachedGallery = photos;
     localStorage.setItem(STORAGE_KEYS.GALLERY_PHOTOS, JSON.stringify(photos));
+    emitChange();
+
+    // Push to Cloudflare KV
+    try {
+      await fetch(`${API_BASE}/api/gallery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', photo: newPhoto }),
+      });
+      syncStatus = 'synced';
+    } catch (err) {
+      console.error('[Cloudflare KV] Failed to sync new photo:', err);
+      syncStatus = 'offline';
+    }
     emitChange();
     return newPhoto;
   },
 
-  deleteGalleryPhoto(id: string): void {
+  async deleteGalleryPhoto(id: string): Promise<void> {
     const photos = this.getGalleryPhotos().filter(p => p.id !== id);
+    cachedGallery = photos;
     localStorage.setItem(STORAGE_KEYS.GALLERY_PHOTOS, JSON.stringify(photos));
     emitChange();
+
+    try {
+      await fetch(`${API_BASE}/api/gallery`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', photoId: id }),
+      });
+      syncStatus = 'synced';
+    } catch (err) {
+      console.error('[Cloudflare KV] Failed to delete photo on cloud:', err);
+      syncStatus = 'offline';
+    }
+    emitChange();
   },
 
-  resetGallery(): void {
+  async resetGallery(): Promise<void> {
+    cachedGallery = GALLERY_PHOTOS;
     localStorage.removeItem(STORAGE_KEYS.GALLERY_PHOTOS);
     emitChange();
-  },
 
-  // --- INQUIRIES & LEADS ---
-  getInquiries(): StoredInquiry[] {
     try {
-      const raw = localStorage.getItem(STORAGE_KEYS.INQUIRIES);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
+      await fetch(`${API_BASE}/api/gallery/reset`, { method: 'POST' });
+      syncStatus = 'synced';
+    } catch (err) {
+      console.error('[Cloudflare KV] Failed to reset gallery on cloud:', err);
     }
-  },
-
-  addInquiry(inquiry: Omit<StoredInquiry, 'id' | 'date'>): StoredInquiry {
-    const list = this.getInquiries();
-    const newInquiry: StoredInquiry = {
-      id: `inq-${Date.now()}`,
-      date: new Date().toLocaleString(),
-      ...inquiry,
-    };
-    list.unshift(newInquiry);
-    localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(list));
-    emitChange();
-    return newInquiry;
-  },
-
-  clearInquiries(): void {
-    localStorage.removeItem(STORAGE_KEYS.INQUIRIES);
     emitChange();
   },
 
@@ -208,28 +311,36 @@ export const adminStore = {
   exportBackupJson(): string {
     return JSON.stringify(
       {
-        version: 1,
+        version: 2,
         exportedAt: new Date().toISOString(),
         plotsOverrides: this.getPlotOverrides(),
         galleryPhotos: this.getGalleryPhotos(),
-        inquiries: this.getInquiries(),
       },
       null,
       2
     );
   },
 
-  importBackupJson(jsonStr: string): boolean {
+  async importBackupJson(jsonStr: string): Promise<boolean> {
     try {
       const data = JSON.parse(jsonStr);
       if (data.plotsOverrides) {
+        cachedOverrides = data.plotsOverrides;
         localStorage.setItem(STORAGE_KEYS.PLOTS_OVERRIDES, JSON.stringify(data.plotsOverrides));
+        await fetch(`${API_BASE}/api/plots`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ overrides: data.plotsOverrides }),
+        });
       }
       if (data.galleryPhotos && Array.isArray(data.galleryPhotos)) {
+        cachedGallery = data.galleryPhotos;
         localStorage.setItem(STORAGE_KEYS.GALLERY_PHOTOS, JSON.stringify(data.galleryPhotos));
-      }
-      if (data.inquiries && Array.isArray(data.inquiries)) {
-        localStorage.setItem(STORAGE_KEYS.INQUIRIES, JSON.stringify(data.inquiries));
+        await fetch(`${API_BASE}/api/gallery`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ photos: data.galleryPhotos }),
+        });
       }
       emitChange();
       return true;
@@ -238,3 +349,27 @@ export const adminStore = {
     }
   },
 };
+
+// Automatic initial sync & background polling across all devices
+if (typeof window !== 'undefined') {
+  // Sync immediately when page loads
+  adminStore.syncWithCloud();
+
+  // Re-sync when user tabs back or unlocks their mobile screen
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      adminStore.syncWithCloud();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    adminStore.syncWithCloud();
+  });
+
+  // Background polling every 12 seconds for seamless live cross-device sync
+  setInterval(() => {
+    if (document.visibilityState === 'visible') {
+      adminStore.syncWithCloud();
+    }
+  }, 12000);
+}
