@@ -36,14 +36,70 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
   onReset,
   searchRef,
 }) => {
+  const allPlots = plots || [];
+  const industrialPlots = allPlots.filter(p => !p.id.startsWith('common-'));
+  const countAvailable = industrialPlots.filter(p => p.status === 'Available').length;
+  const countOnHold = industrialPlots.filter(p => p.status === 'On Hold').length;
+  const countSold = industrialPlots.filter(p => p.status === 'Sold').length;
+
+  const countGold = industrialPlots.filter(p => p.zone === 'Gold').length;
+  const countPlatinum = industrialPlots.filter(p => p.zone === 'Platinum').length;
+  const countDiamond = industrialPlots.filter(p => p.zone === 'Diamond').length;
+
   return (
     <>
+      {/* ============================================================
+          TOP FLOATING STATUS BANNER (Visible on all devices when Status is ON)
+          Unambiguously explains: Green = Available, Yellow = On Hold, Red = Sold
+          ============================================================ */}
+      {showStatus && (
+        <div className="fixed top-[60px] sm:top-[74px] left-1/2 -translate-x-1/2 z-30 pointer-events-auto flex items-center gap-2 sm:gap-3.5 px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-full bg-[#12151d]/95 border border-emerald-500/40 backdrop-blur-2xl shadow-2xl shadow-black/80 animate-in fade-in slide-in-from-top-2 duration-200 select-none max-w-[96vw] overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-emerald-400 whitespace-nowrap">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.9)] shrink-0" />
+            <span>Green = Available</span>
+            <span className="text-[10px] sm:text-xs text-emerald-300/80 font-mono">({countAvailable})</span>
+          </div>
+          <span className="w-px h-3.5 bg-white/20 shrink-0" />
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-amber-400 whitespace-nowrap">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_8px_rgba(245,158,11,0.9)] shrink-0" />
+            <span>Yellow = On Hold</span>
+            <span className="text-[10px] sm:text-xs text-amber-300/80 font-mono">({countOnHold})</span>
+          </div>
+          <span className="w-px h-3.5 bg-white/20 shrink-0" />
+          <div className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold text-rose-400 whitespace-nowrap">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#dc2626] shadow-[0_0_8px_rgba(220,38,38,0.9)] shrink-0" />
+            <span>Red = Sold</span>
+            <span className="text-[10px] sm:text-xs text-rose-300/80 font-mono">({countSold})</span>
+          </div>
+        </div>
+      )}
+
       {/* ============================================================
           MOBILE FLOATING CONTROLS (Viewport < 640px)
           Search bar positioned directly ABOVE the buttons for 1-tap access
           ============================================================ */}
       <div className="fixed bottom-3 left-2.5 right-2.5 z-30 sm:hidden pointer-events-auto flex flex-col items-center gap-1.5">
         
+        {/* Mobile Status Legend Pill (Appears directly in dock when Status is ON) */}
+        {showStatus && (
+          <div className="w-full flex items-center justify-around py-1.5 px-2.5 rounded-2xl bg-[#1c1c1c]/95 border border-emerald-500/30 backdrop-blur-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200 select-none text-[11px] font-bold">
+            <div className="flex items-center gap-1 text-emerald-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_6px_rgba(34,197,94,0.8)] shrink-0" />
+              <span>Available ({countAvailable})</span>
+            </div>
+            <div className="w-px h-3 bg-white/15" />
+            <div className="flex items-center gap-1 text-amber-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_6px_rgba(245,158,11,0.8)] shrink-0" />
+              <span>On Hold ({countOnHold})</span>
+            </div>
+            <div className="w-px h-3 bg-white/15" />
+            <div className="flex items-center gap-1 text-rose-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#dc2626] shadow-[0_0_6px_rgba(220,38,38,0.8)] shrink-0" />
+              <span>Sold ({countSold})</span>
+            </div>
+          </div>
+        )}
+
         {/* 1. Mobile Search Bar */}
         <div className="w-full">
           <PlotSearchTypeahead
@@ -255,32 +311,32 @@ export const FloatingHudDock: React.FC<FloatingHudDockProps> = ({
           <div className="grid grid-cols-3 gap-1.5 pt-0.5">
             {showStatus ? (
               <>
-                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-slate-200 border border-white/5 shadow-inner">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.8)]" />
-                  <span>Available</span>
+                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-emerald-300 border border-emerald-500/20 shadow-inner">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#22c55e] shadow-[0_0_8px_rgba(34,197,94,0.8)] shrink-0" />
+                  <span>Available ({countAvailable})</span>
                 </div>
-                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-slate-200 border border-white/5 shadow-inner">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_8px_rgba(245,158,11,0.8)]" />
-                  <span>On Hold</span>
+                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-amber-300 border border-amber-500/20 shadow-inner">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#f59e0b] shadow-[0_0_8px_rgba(245,158,11,0.8)] shrink-0" />
+                  <span>On Hold ({countOnHold})</span>
                 </div>
-                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-slate-200 border border-white/5 shadow-inner">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#dc2626] shadow-[0_0_8px_rgba(220,38,38,0.8)]" />
-                  <span>Sold</span>
+                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-rose-300 border border-rose-500/20 shadow-inner">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#dc2626] shadow-[0_0_8px_rgba(220,38,38,0.8)] shrink-0" />
+                  <span>Sold ({countSold})</span>
                 </div>
               </>
             ) : (
               <>
-                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-slate-200 border border-white/5 shadow-inner">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#eab308] shadow-[0_0_8px_rgba(234,179,8,0.7)]" />
-                  <span>Gold</span>
+                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-amber-300 border border-amber-500/20 shadow-inner">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#eab308] shadow-[0_0_8px_rgba(234,179,8,0.7)] shrink-0" />
+                  <span>Gold ({countGold})</span>
                 </div>
-                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-slate-200 border border-white/5 shadow-inner">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#ec4899] shadow-[0_0_8px_rgba(236,72,153,0.7)]" />
-                  <span>Platinum</span>
+                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-pink-300 border border-pink-500/20 shadow-inner">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#ec4899] shadow-[0_0_8px_rgba(236,72,153,0.7)] shrink-0" />
+                  <span>Platinum ({countPlatinum})</span>
                 </div>
-                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-slate-200 border border-white/5 shadow-inner">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.7)]" />
-                  <span>Diamond</span>
+                <div className="flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-[#262626] text-[11px] font-semibold text-cyan-300 border border-cyan-500/20 shadow-inner">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#38bdf8] shadow-[0_0_8px_rgba(56,189,248,0.7)] shrink-0" />
+                  <span>Diamond ({countDiamond})</span>
                 </div>
               </>
             )}

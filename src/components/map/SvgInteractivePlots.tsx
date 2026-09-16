@@ -244,6 +244,7 @@ export const SvgInteractivePlots: React.FC<SvgInteractivePlotsProps> = ({
             onPointerEnter={() => onPlotHover(plot.id)}
             onPointerLeave={() => onPlotHover(null)}
           >
+            <title>{`${plot.label} • ${plot.status} • ${plot.zone} Zone (${plot.areaSft.toLocaleString()} SFT)`}</title>
             {/* Interactive Hit Polygon */}
             {(() => {
               const isMatchingCategory = Boolean(
