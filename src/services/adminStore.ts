@@ -63,9 +63,7 @@ export const adminStore = {
     emitChange();
 
     try {
-      const res = await fetch(`${API_BASE}/api/sync`, {
-        headers: { 'Cache-Control': 'no-cache' },
-      });
+      const res = await fetch(`${API_BASE}/api/sync?_t=${Date.now()}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
 

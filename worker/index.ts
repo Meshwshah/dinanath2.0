@@ -5,8 +5,8 @@ export interface Env {
 
 const CORS_HEADERS: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+  'Access-Control-Allow-Headers': '*',
   'Access-Control-Max-Age': '86400',
 };
 
@@ -239,7 +239,7 @@ export default {
           },
         });
 
-        const publicUrl = `https://dinanath-api.dinanath.workers.dev/images/${encodeURIComponent(key)}`;
+        const publicUrl = `https://pub-5d6133fa007f406283d23005a0eb7a86.r2.dev/${encodeURIComponent(key)}`;
 
         return jsonResponse({
           success: true,
@@ -250,6 +250,21 @@ export default {
         });
       }
 
+      // 10. GET /api/r2/objects - lists all files currently in the R2 bucket
+      if (request.method === 'GET' && url.pathname === '/api/r2/objects') {
+        if (!env.DINANATH_BUCKET) {
+          return jsonResponse({ error: 'R2 bucket not bound' }, 500);
+        }
+        const listed = await env.DINANATH_BUCKET.list();
+        const objects = listed.objects.map(obj => ({
+          key: obj.key,
+          size: obj.size,
+          uploaded: obj.uploaded,
+          url: `https://pub-5d6133fa007f406283d23005a0eb7a86.r2.dev/${encodeURIComponent(obj.key)}`,
+        }));
+        return jsonResponse({ success: true, count: objects.length, objects });
+      }
+
       // Health check / root
       if (url.pathname === '/' || url.pathname === '/health') {
         return jsonResponse({
@@ -258,6 +273,7 @@ export default {
           version: '2.0.0',
           storage: 'Cloudflare KV (DINANATH_STORAGE) + Cloudflare R2 (dinanathproject3)',
           r2Bucket: 'dinanathproject3',
+          publicDevUrl: 'https://pub-5d6133fa007f406283d23005a0eb7a86.r2.dev',
         });
       }
 
