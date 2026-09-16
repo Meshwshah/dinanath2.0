@@ -28,6 +28,16 @@ function emitChange() {
   }
 }
 
+function mergeWithDefaultPhotos(photos: GalleryPhoto[]): GalleryPhoto[] {
+  const list = [...photos];
+  for (const def of GALLERY_PHOTOS) {
+    if (!list.some(p => p.id === def.id || p.url === def.url)) {
+      list.push(def);
+    }
+  }
+  return list;
+}
+
 // In-memory cache for fast synchronous access
 let cachedOverrides: Record<string, PlotOverride> | null = null;
 let cachedGallery: GalleryPhoto[] | null = null;
@@ -74,11 +84,12 @@ export const adminStore = {
 
       // Sync Gallery Photos
       if (Array.isArray(data.galleryPhotos) && data.galleryPhotos.length > 0) {
+        const merged = mergeWithDefaultPhotos(data.galleryPhotos);
         const localGalleryStr = localStorage.getItem(STORAGE_KEYS.GALLERY_PHOTOS) || '[]';
-        const serverGalleryStr = JSON.stringify(data.galleryPhotos);
+        const serverGalleryStr = JSON.stringify(merged);
         if (localGalleryStr !== serverGalleryStr) {
           localStorage.setItem(STORAGE_KEYS.GALLERY_PHOTOS, serverGalleryStr);
-          cachedGallery = data.galleryPhotos;
+          cachedGallery = merged;
           hasChanges = true;
         }
       }
@@ -237,8 +248,9 @@ export const adminStore = {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          cachedGallery = parsed;
-          return parsed;
+          const merged = mergeWithDefaultPhotos(parsed);
+          cachedGallery = merged;
+          return merged;
         }
       }
     } catch {}

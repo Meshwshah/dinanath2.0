@@ -158,8 +158,8 @@ export default {
         return jsonResponse({ success: true, message: 'Gallery reset to defaults', photos: [] });
       }
 
-      // 8. GET /images/* or /api/images/* - stream images from Cloudflare R2 bucket
-      if (request.method === 'GET' && (url.pathname.startsWith('/images/') || url.pathname.startsWith('/api/images/'))) {
+      // 8. GET or HEAD /images/* or /api/images/* - stream images from Cloudflare R2 bucket
+      if ((request.method === 'GET' || request.method === 'HEAD') && (url.pathname.startsWith('/images/') || url.pathname.startsWith('/api/images/'))) {
         const key = decodeURIComponent(url.pathname.replace(/^\/(?:api\/)?images\//, ''));
         if (!key) {
           return jsonResponse({ error: 'Image key required' }, 400);
@@ -179,6 +179,10 @@ export default {
         headers.set('etag', object.httpEtag);
         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
         headers.set('Access-Control-Allow-Origin', '*');
+
+        if (request.method === 'HEAD') {
+          return new Response(null, { headers });
+        }
 
         return new Response(object.body, { headers });
       }

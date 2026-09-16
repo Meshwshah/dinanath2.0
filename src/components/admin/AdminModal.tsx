@@ -62,6 +62,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   useEffect(() => {
     if (isOpen) {
       refreshData();
+      adminStore.syncWithCloud();
       const unsubscribe = adminStore.subscribe(() => {
         refreshData();
         if (onPlotsUpdated) onPlotsUpdated();

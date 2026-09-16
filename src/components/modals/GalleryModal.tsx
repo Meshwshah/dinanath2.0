@@ -9,42 +9,20 @@ interface GalleryModalProps {
 }
 
 export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) => {
-  // Dynamic remote photos fetched from the worker API (with curated fallbacks)
-  const [remotePhotos, setRemotePhotos] = useState<GalleryPhoto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [localPhotos, setLocalPhotos] = useState<GalleryPhoto[]>([]);
+  const [photos, setPhotos] = useState<GalleryPhoto[]>(() => adminStore.getGalleryPhotos());
 
   useEffect(() => {
     if (!isOpen) return;
-    setLocalPhotos(adminStore.getGalleryPhotos());
-    setIsLoading(true);
-    fetch('https://dinanath-industrial-park-plot-viewer.dinanath.workers.dev/api/gallery')
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data: Array<{ id: number; imageUrl: string; caption: string | null; uploadedAt: string | null }>) => {
-        if (Array.isArray(data) && data.length > 0) {
-          const mapped: GalleryPhoto[] = data.map(item => ({
-            id: `worker-photo-${item.id}`,
-            title: item.caption || `Site Development Photograph #${item.id}`,
-            url: `https://dinanath-industrial-park-plot-viewer.dinanath.workers.dev${item.imageUrl}`,
-            alt: item.caption || `Site Photo #${item.id}`,
-            date: item.uploadedAt ? new Date(item.uploadedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'Site Progress',
-            category: 'Site Progress',
-            description: item.caption || 'Real on-site development photograph',
-          }));
-          setRemotePhotos(mapped);
-        }
-      })
-      .catch(err => {
-        console.warn('Using bundled gallery photos:', err);
-      })
-      .finally(() => setIsLoading(false));
+    setPhotos(adminStore.getGalleryPhotos());
+    adminStore.syncWithCloud();
+
+    const unsubscribe = adminStore.subscribe(() => {
+      setPhotos(adminStore.getGalleryPhotos());
+    });
+    return unsubscribe;
   }, [isOpen]);
 
-  // Combine admin store photos (custom uploads/manage) and worker photos, avoiding duplicate IDs
-  const allPhotos = [...localPhotos, ...remotePhotos.filter(rp => !localPhotos.some(lp => lp.url === rp.url))];
+  const allPhotos = photos;
 
   // Lightbox state: if selectedPhoto is non-null, the zoom lightbox is active
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
@@ -223,7 +201,7 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) =
 
         {/* Scrollable Photos Page */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 custom-scrollbar">
-          {isLoading && allPhotos.length === 0 ? (
+          {allPhotos.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
               <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mb-3" />
               <p className="text-sm">Loading site photographs...</p>
