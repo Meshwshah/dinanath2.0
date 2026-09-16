@@ -1,6 +1,6 @@
 import type { PlotData, PlotStatus } from '../types/masterplan';
 import { PLOTS_DATA } from '../data/plotsData';
-import { GALLERY_PHOTOS, type GalleryPhoto } from '../data/galleryPhotos';
+import type { GalleryPhoto } from '../data/galleryPhotos';
 
 export interface PlotOverride {
   status?: PlotStatus;
@@ -26,16 +26,6 @@ function emitChange() {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
   }
-}
-
-function mergeWithDefaultPhotos(photos: GalleryPhoto[]): GalleryPhoto[] {
-  const list = [...photos];
-  for (const def of GALLERY_PHOTOS) {
-    if (!list.some(p => p.id === def.id || p.url === def.url)) {
-      list.push(def);
-    }
-  }
-  return list;
 }
 
 // In-memory cache for fast synchronous access
@@ -81,13 +71,12 @@ export const adminStore = {
       }
 
       // Sync Gallery Photos
-      if (Array.isArray(data.galleryPhotos) && data.galleryPhotos.length > 0) {
-        const merged = mergeWithDefaultPhotos(data.galleryPhotos);
+      if (Array.isArray(data.galleryPhotos)) {
         const localGalleryStr = localStorage.getItem(STORAGE_KEYS.GALLERY_PHOTOS) || '[]';
-        const serverGalleryStr = JSON.stringify(merged);
+        const serverGalleryStr = JSON.stringify(data.galleryPhotos);
         if (localGalleryStr !== serverGalleryStr) {
           localStorage.setItem(STORAGE_KEYS.GALLERY_PHOTOS, serverGalleryStr);
-          cachedGallery = merged;
+          cachedGallery = data.galleryPhotos;
           hasChanges = true;
         }
       }
@@ -243,17 +232,16 @@ export const adminStore = {
     if (cachedGallery !== null) return cachedGallery;
     try {
       const raw = localStorage.getItem(STORAGE_KEYS.GALLERY_PHOTOS);
-      if (raw) {
+      if (raw !== null) {
         const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const merged = mergeWithDefaultPhotos(parsed);
-          cachedGallery = merged;
-          return merged;
+        if (Array.isArray(parsed)) {
+          cachedGallery = parsed;
+          return parsed;
         }
       }
     } catch {}
-    cachedGallery = GALLERY_PHOTOS;
-    return GALLERY_PHOTOS;
+    cachedGallery = [];
+    return [];
   },
 
   // Upload image directly to Cloudflare R2 bucket
@@ -326,7 +314,7 @@ export const adminStore = {
   },
 
   async resetGallery(): Promise<void> {
-    cachedGallery = GALLERY_PHOTOS;
+    cachedGallery = [];
     localStorage.removeItem(STORAGE_KEYS.GALLERY_PHOTOS);
     emitChange();
 

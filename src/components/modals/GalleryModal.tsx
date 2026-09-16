@@ -202,9 +202,16 @@ export const GalleryModal: React.FC<GalleryModalProps> = ({ isOpen, onClose }) =
         {/* Scrollable Photos Page */}
         <div className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 custom-scrollbar">
           {allPhotos.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-              <div className="w-8 h-8 border-2 border-amber-400 border-t-transparent rounded-full animate-spin mb-3" />
-              <p className="text-sm">Loading site photographs...</p>
+            <div className="flex flex-col items-center justify-center py-20 text-slate-400 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-3 text-slate-500">
+                <svg width={28} height={28} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                  <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                  <circle cx="9" cy="9" r="2"/>
+                  <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-slate-300 mb-1">No Photos in Gallery Yet</p>
+              <p className="text-xs text-slate-500 max-w-xs">Site development photographs uploaded via the Admin Portal will appear here.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

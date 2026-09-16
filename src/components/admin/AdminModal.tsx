@@ -752,21 +752,28 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
                         Current Gallery Photos ({galleryPhotos.length})
                       </h3>
-                      <button
-                        onClick={() => {
-                          if (window.confirm('Reset gallery to default photos?')) {
-                            adminStore.resetGallery();
-                            showToast('Gallery reset to defaults');
-                          }
-                        }}
-                        className="text-xs text-rose-400 hover:underline"
-                      >
-                        Reset Gallery Defaults
-                      </button>
+                      {galleryPhotos.length > 0 && (
+                        <button
+                          onClick={() => {
+                            if (window.confirm('Delete all photos and empty the gallery?')) {
+                              adminStore.resetGallery();
+                              showToast('Gallery emptied');
+                            }
+                          }}
+                          className="text-xs text-rose-400 hover:underline"
+                        >
+                          Clear All Photos
+                        </button>
+                      )}
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                      {galleryPhotos.map(photo => (
+                    {galleryPhotos.length === 0 ? (
+                      <div className="p-8 rounded-2xl bg-black/30 border border-white/10 text-center text-slate-500 text-xs">
+                        No photos in the gallery yet. Use the form above to upload site photographs.
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                        {galleryPhotos.map(photo => (
                         <div
                           key={photo.id}
                           className="group relative rounded-2xl overflow-hidden bg-[#18181c] border border-white/10 flex flex-col shadow-md"
@@ -796,6 +803,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         </div>
                       ))}
                     </div>
+                  )}
                   </div>
                 </div>
               )}
