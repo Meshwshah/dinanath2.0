@@ -256,8 +256,8 @@ export default {
           status: 'online',
           service: 'Dinanath 2.0 Cloud Sync API',
           version: '2.0.0',
-          storage: 'Cloudflare KV (DINANATH_STORAGE) + Cloudflare R2 (dinanathproject)',
-          r2Bucket: 'dinanathproject',
+          storage: 'Cloudflare KV (DINANATH_STORAGE) + Cloudflare R2 (dinanathproject3)',
+          r2Bucket: 'dinanathproject3',
         });
       }
 

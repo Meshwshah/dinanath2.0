@@ -652,7 +652,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             className="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500 file:text-black hover:file:bg-cyan-400 cursor-pointer"
                           />
                           <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
-                            ☁️ Uploads directly to Cloudflare R2 cloud storage (dinanathproject)
+                            ☁️ Uploads directly to Cloudflare R2 cloud storage (dinanathproject3)
                           </p>
                         </div>
 
