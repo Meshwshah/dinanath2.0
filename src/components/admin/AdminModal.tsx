@@ -35,6 +35,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
   const [newPhotoUrl, setNewPhotoUrl] = useState<string>('');
   const [newPhotoCategory, setNewPhotoCategory] = useState<string>('Site Progress');
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Settings state
@@ -115,29 +116,44 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     }
   };
 
-  // File Upload handler for Gallery
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // File Upload handler for Gallery (uploads directly to Cloudflare R2 bucket)
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (max 5MB for base64 storage)
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File size exceeds 5MB. Please choose a smaller image.');
+    // Check size limit (max 25MB for Cloudflare R2)
+    if (file.size > 25 * 1024 * 1024) {
+      alert('File size exceeds 25MB limit. Please choose a smaller image.');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result as string;
-      setUploadPreview(result);
-      setNewPhotoUrl(result);
-      if (!newPhotoTitle) {
-        // Use clean filename without extension as default title
-        const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
-        setNewPhotoTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
-      }
-    };
-    reader.readAsDataURL(file);
+    // Set local preview immediately
+    const objectUrl = URL.createObjectURL(file);
+    setUploadPreview(objectUrl);
+
+    if (!newPhotoTitle) {
+      // Use clean filename without extension as default title
+      const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      setNewPhotoTitle(cleanName.charAt(0).toUpperCase() + cleanName.slice(1));
+    }
+
+    // Upload directly to Cloudflare R2
+    setIsUploadingPhoto(true);
+    try {
+      const { url } = await adminStore.uploadPhoto(file);
+      setNewPhotoUrl(url);
+      showToast('Photo uploaded to Cloudflare R2!');
+    } catch (err: any) {
+      console.warn('R2 upload failed, falling back to local encoding:', err);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setNewPhotoUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+      showToast('Uploaded with local fallback');
+    } finally {
+      setIsUploadingPhoto(false);
+    }
   };
 
   // Add Photo to Gallery
@@ -634,8 +650,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             onChange={handleFileChange}
                             className="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-cyan-500 file:text-black hover:file:bg-cyan-400 cursor-pointer"
                           />
-                          <p className="text-[10px] text-slate-500">
-                            Images are processed instantly and saved locally in your browser.
+                          <p className="text-[10px] text-emerald-400 font-medium flex items-center gap-1">
+                            ☁️ Uploads directly to Cloudflare R2 cloud storage (dinanathproject)
                           </p>
                         </div>
 
@@ -700,6 +716,12 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           <div className="text-xs">
                             <span className="font-semibold text-cyan-300">Ready to add:</span>{' '}
                             <span className="text-slate-300">{newPhotoTitle || 'Photo'}</span>
+                            {isUploadingPhoto && (
+                              <p className="text-[11px] text-amber-400 mt-0.5 flex items-center gap-1">
+                                <span className="inline-block w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                                Uploading to Cloudflare R2 bucket...
+                              </p>
+                            )}
                           </div>
                         </div>
                       )}
@@ -707,9 +729,17 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       <div className="flex justify-end gap-2">
                         <button
                           type="submit"
-                          className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs shadow-md shadow-cyan-500/20 transition-all active:scale-95"
+                          disabled={isUploadingPhoto}
+                          className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-extrabold text-xs shadow-md shadow-cyan-500/20 transition-all active:scale-95 flex items-center gap-2"
                         >
-                          Add to Gallery
+                          {isUploadingPhoto ? (
+                            <>
+                              <div className="w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                              <span>Uploading to R2...</span>
+                            </>
+                          ) : (
+                            <span>Add to Gallery</span>
+                          )}
                         </button>
                       </div>
                     </form>

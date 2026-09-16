@@ -5,3 +5,7 @@ compatibility_date = "2024-09-01"
 [[kv_namespaces]]
 binding = "DINANATH_STORAGE"
 id = "eb544166ff4844abb8e88f5f4a575547"
+
+[[r2_buckets]]
+binding = "DINANATH_BUCKET"
+bucket_name = "dinanathproject"

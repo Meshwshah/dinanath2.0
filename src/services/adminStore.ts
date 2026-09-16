@@ -246,6 +246,28 @@ export const adminStore = {
     return GALLERY_PHOTOS;
   },
 
+  // Upload image directly to Cloudflare R2 bucket
+  async uploadPhoto(file: File): Promise<{ url: string; key: string }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await fetch(`${API_BASE}/api/upload`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error(`Upload failed with status ${res.status}`);
+    }
+
+    const data = await res.json();
+    if (!data.success || !data.url) {
+      throw new Error(data.error || 'Failed to upload photo to Cloudflare R2');
+    }
+
+    return { url: data.url, key: data.key };
+  },
+
   async addGalleryPhoto(photo: Omit<GalleryPhoto, 'id'>): Promise<GalleryPhoto> {
     const photos = [...this.getGalleryPhotos()];
     const newPhoto: GalleryPhoto = {
